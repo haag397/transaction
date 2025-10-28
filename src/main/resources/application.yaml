@@ -1,0 +1,92 @@
+server:
+  port: 8087
+
+debug: true
+
+spring:
+  application:
+    name: transaction-service
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  liquibase:
+    enabled:  false
+  #    change-log: classpath:/db/changelog/db.changelog-master.yaml
+
+  datasource:
+    url: jdbc:postgresql://localhost:5436/transaction
+    username: root
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  cache:
+    type: redis
+  data:
+    redis:
+      host: localhost
+      port: 6384
+      timeout: 2000
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    disable-swagger-default-url: true
+  paths-to-match: /**
+  info:
+    title: Transaction Service API
+    version: 1.0.0
+    description: API for managing deposit operations
+    contact:
+      name: IPAAM Team
+      email: support@ipaam.ir true
+#axon:
+#  axonserver:
+#    enabled: false
+
+axon:
+  axonserver:
+    enabled: false
+  eventhandling:
+    processors:
+      deposit-projections:
+        mode: subscribing
+        source: eventBus
+      depositType-projection:
+        mode: subscribing
+        source: eventBus
+      deposit-opening-integration:
+        mode: subscribing
+        source: eventBus
+#        mode: tracking
+#        source: eventStore
+#         optional: start at tail (to read past events)
+#        initial-segment-count: 1
+#  eventstore:
+#    jdbc:
+#      schema: default
+
+camunda:
+  client:
+    mode: self-managed
+    zeebe:
+      enabled: true
+      grpc-address: http://192.168.179.20:26500
+      rest-address: http://192.168.179.20:8080
+
+logging:
+  level:
+    feign.Logger: DEBUG
+    ir.ipaam.deposit: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.data.redis: DEBUG
+
+feign:
+  client:
+    core:
+      url: ${ESB_ADDRESS}

@@ -1,0 +1,29 @@
+services:
+  transaction_redis:
+    image: redis:8.2
+    container_name: transaction_redis
+    ports:
+      - "6383:6379"
+    restart: unless-stopped
+  transaction_db:
+    image: postgres:17.6-alpine
+    container_name: transaction_db
+    environment:
+      POSTGRES_DB: transaction
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+      PGDATA: /data/postgres
+    volumes:
+      - transaction_db:/data/postgres
+    ports:
+      - "5436:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U root -d transaction" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  transaction_db:
+    name: transaction_db
