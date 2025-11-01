@@ -7,18 +7,17 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Builder
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CoreBatchDepositTransferRequestDTO {
     String documentItemType;
     String sourceAccount;
     String branchCode;
-    String sourceAmount;
+    Long sourceAmount;
     String sourceComment;
     String transferBillNumber;
     String transactionId;
-    private List<CreditorDTO> creditors;
-
+    List<CreditorDTO> creditors;
 }

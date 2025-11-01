@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CoreBatchDepositTransferResponseDTO {
-    String transactionDate;
-    String transactionId;
-    String transactionCode;
+public class CoreTransactionInquiryRequestDTO {
+    String id;
 }

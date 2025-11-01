@@ -7,6 +7,8 @@ import ir.ipaam.common.exception.CustomBusinessException;
 import ir.ipaam.transaction.integration.client.core.CoreClient;
 import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferRequestDTO;
 import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferResponseDTO;
+import ir.ipaam.transaction.integration.client.core.dto.CoreTransactionInquiryRequestDTO;
+import ir.ipaam.transaction.integration.client.core.dto.CoreTransactionInquiryResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,16 @@ public class CoreServiceImpl implements CoreService {
             return coreClient.batchDepositTransfer(request);
         } catch (FeignException feignException) {
             handleFeignException(feignException, "خطا در فراخوانی سرویس انتقال وجه حساب به حساب گروهی");
+        }
+        return null;
+    }
+
+    @Override
+    public CoreTransactionInquiryResponseDTO transactionInquiry(CoreTransactionInquiryRequestDTO request) {
+        try {
+            return coreClient.transactionInquiry(request);
+        } catch (FeignException feignException) {
+            handleFeignException(feignException, "خطا در فراخوانی سرویس استعالم تراکنش");
         }
         return null;
     }
