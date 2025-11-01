@@ -6,5 +6,6 @@ public enum TransactionResponseStatus {
     REVERSED,
     REVERSING,
     INPROGRESS,
-    REQUESTED
-}
+    REQUESTED,
+    UPDATED
+    }

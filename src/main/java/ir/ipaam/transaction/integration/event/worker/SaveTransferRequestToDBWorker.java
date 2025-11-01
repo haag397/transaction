@@ -23,16 +23,7 @@ public class SaveTransferRequestToDBWorker {
     @JobWorker(type = "save_db")
     public Map<String, Object> batchDepositTransfer(
             @Variable CoreBatchDepositTransferRequestDTO coreBatchDepositTransferRequestDTO) {
-        String transactionId = coreBatchDepositTransferRequestDTO.getTransactionId();
-//        BatchDepositTransferRequest entity = new BatchDepositTransferRequest();
-//        entity.setDocumentItemType(coreBatchDepositTransferRequestDTO.getDocumentItemType());
-//        entity.setSourceAccount(coreBatchDepositTransferRequestDTO.getSourceAccount());
-//        entity.setBranchCode(coreBatchDepositTransferRequestDTO.getBranchCode());
-//        entity.setSourceAmount(coreBatchDepositTransferRequestDTO.getSourceAmount());
-//        entity.setSourceComment(coreBatchDepositTransferRequestDTO.getSourceComment());
-//        entity.setTransferBillNumber(coreBatchDepositTransferRequestDTO.getTransferBillNumber());
-//        entity.setTransactionId(coreBatchDepositTransferRequestDTO.getTransactionId());
-//        batchDepositTransferRepository.save(entity);
+
         BatchDepositTransferCommand command =
                 new BatchDepositTransferCommand(
                         coreBatchDepositTransferRequestDTO.getTransactionId(),

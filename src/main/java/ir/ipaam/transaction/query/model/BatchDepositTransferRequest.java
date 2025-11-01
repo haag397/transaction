@@ -42,7 +42,7 @@ public class BatchDepositTransferRequest {
     private LocalDateTime transactionDate;
     private String transactionCode;
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 16)
-    private BatchDepositTransferStatus status;
-    private TransactionResponseStatus resultData;
+    @Column(name = "batchDepositTransferStatus", nullable = false, length = 16)
+    private BatchDepositTransferStatus batchDepositTransferStatus;
+    private TransactionResponseStatus transactionResponseStatus;
 }

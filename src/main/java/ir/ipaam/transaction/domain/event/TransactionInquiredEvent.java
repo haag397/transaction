@@ -8,5 +8,5 @@ public class TransactionInquiredEvent {
     String transactionDate;
     String transactionCode;
 //    Integer rsCode;
-    TransactionResponseStatus status;
+    TransactionResponseStatus transactionStatus;
 }

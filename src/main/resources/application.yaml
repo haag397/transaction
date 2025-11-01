@@ -26,7 +26,7 @@ spring:
   data:
     redis:
       host: localhost
-      port: 6384
+      port: 6383
       timeout: 2000
 
 springdoc:

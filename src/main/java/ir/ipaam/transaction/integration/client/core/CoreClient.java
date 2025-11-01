@@ -12,5 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface CoreClient {
     @PostMapping("/issuedocument")
     CoreBatchDepositTransferResponseDTO batchDepositTransfer(@RequestBody CoreBatchDepositTransferRequestDTO request);
+    @PostMapping("/edgham/transaction/getedghamstatus")
     CoreTransactionInquiryResponseDTO transactionInquiry(@RequestBody CoreTransactionInquiryRequestDTO request);
 }

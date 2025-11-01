@@ -8,5 +8,5 @@ public class BatchDepositTransferedEvent {
     String transactionDate;
     String transactionId;
     String transactionCode;
-    BatchDepositTransferStatus status;
+    BatchDepositTransferStatus batchDepositTransferStatus;
 }
