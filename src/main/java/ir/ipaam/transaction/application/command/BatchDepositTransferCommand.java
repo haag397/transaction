@@ -1,6 +1,5 @@
 package ir.ipaam.transaction.application.command;
 
-import ir.ipaam.transaction.domain.model.BatchDepositTransferStatus;
 import ir.ipaam.transaction.integration.client.core.dto.CreditorDTO;
 import lombok.Value;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
@@ -18,4 +17,6 @@ public class BatchDepositTransferCommand {
     String sourceComment;
     String transferBillNumber;
     List<CreditorDTO> creditors;
+    String transactionCode;
+    String transactionDate;
 }

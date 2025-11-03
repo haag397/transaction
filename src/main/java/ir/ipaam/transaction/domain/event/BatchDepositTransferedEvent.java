@@ -1,12 +1,14 @@
 package ir.ipaam.transaction.domain.event;
 
-import ir.ipaam.transaction.domain.model.BatchDepositTransferStatus;
+import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
+import lombok.Builder;
 import lombok.Value;
 
 @Value
+@Builder
 public class BatchDepositTransferedEvent {
-    String transactionDate;
     String transactionId;
+    String transactionDate;
     String transactionCode;
-    BatchDepositTransferStatus batchDepositTransferStatus;
+    TransactionResponseStatus transactionResponseStatus;
 }

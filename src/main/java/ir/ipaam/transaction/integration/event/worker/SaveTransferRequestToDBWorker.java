@@ -20,24 +20,35 @@ public class SaveTransferRequestToDBWorker {
     private final CoreService coreService;
     private final BatchDepositTransferRepository batchDepositTransferRepository;
 
-    @JobWorker(type = "save_db")
-    public Map<String, Object> batchDepositTransfer(
+    @JobWorker(type = "save_to_db")
+    public Map<String, Object> saveTransferRequestToDB(
             @Variable CoreBatchDepositTransferRequestDTO coreBatchDepositTransferRequestDTO) {
+
+        // Generate transactionId if not provided
+        String transactionId = coreBatchDepositTransferRequestDTO.getTransactionId();
+        if (transactionId == null || transactionId.isEmpty()) {
+            transactionId = java.util.UUID.randomUUID().toString();
+        }
 
         BatchDepositTransferCommand command =
                 new BatchDepositTransferCommand(
-                        coreBatchDepositTransferRequestDTO.getTransactionId(),
+                        transactionId,
                         coreBatchDepositTransferRequestDTO.getDocumentItemType(),
                         coreBatchDepositTransferRequestDTO.getSourceAccount(),
                         coreBatchDepositTransferRequestDTO.getBranchCode(),
                         coreBatchDepositTransferRequestDTO.getSourceAmount(),
                         coreBatchDepositTransferRequestDTO.getSourceComment(),
                         coreBatchDepositTransferRequestDTO.getTransferBillNumber(),
-                        coreBatchDepositTransferRequestDTO.getCreditors()
+                        coreBatchDepositTransferRequestDTO.getCreditors(),
+                        null, // transactionCode - will be set after deposit_transfer
+                        null  // transactionDate - will be set after deposit_transfer
                 );
 
         commandGateway.sendAndWait(command);
 
-        return Map.of("status", "REQUESTED");
+        return Map.of(
+                "transactionId", transactionId,
+                "status", "REQUESTED"
+        );
     }
 }
