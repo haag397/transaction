@@ -1,7 +1,11 @@
 package ir.ipaam.transaction.domain.aggregate;
 
 import ir.ipaam.transaction.application.command.BatchDepositTransferCommand;
+import ir.ipaam.transaction.application.command.TransactionInquiryCommand;
+import ir.ipaam.transaction.application.command.UpdateDepositTransferStateCommand;
 import ir.ipaam.transaction.domain.event.BatchDepositTransferedEvent;
+import ir.ipaam.transaction.domain.event.DepositTransferStateUpdatedEvent;
+import ir.ipaam.transaction.domain.event.TransactionInquiredEvent;
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
 import ir.ipaam.transaction.integration.client.core.dto.CreditorDTO;
 import lombok.NoArgsConstructor;
@@ -56,6 +60,38 @@ public class BatchDepositTransferAggregate {
         this.transactionCode = event.getTransactionCode();
         this.transactionDate = event.getTransactionDate();
         if (event.getTransactionResponseStatus() != null) {
+            this.transactionStatus = event.getTransactionResponseStatus();
         }
+    }
+
+    @CommandHandler
+    public void handle(TransactionInquiryCommand command) {
+        // Emit transaction inquiry event
+        AggregateLifecycle.apply(new TransactionInquiredEvent(
+                this.transactionDate,
+                this.transactionCode,
+                TransactionResponseStatus.TRANSACTION_INQUIRY
+        ));
+    }
+
+    @EventSourcingHandler
+    public void on(TransactionInquiredEvent event) {
+        this.transactionStatus = event.getTransactionStatus();
+        this.transactionCode = event.getTransactionCode();
+        this.transactionDate = event.getTransactionDate();
+    }
+
+    @CommandHandler
+    public void handle(UpdateDepositTransferStateCommand command) {
+        // Emit state update event
+        AggregateLifecycle.apply(new DepositTransferStateUpdatedEvent(
+                command.getTransactionId(),
+                command.getTransactionResponseStatus()
+        ));
+    }
+
+    @EventSourcingHandler
+    public void on(DepositTransferStateUpdatedEvent event) {
+        this.transactionStatus = event.getTransactionResponseStatus();
     }
 }
