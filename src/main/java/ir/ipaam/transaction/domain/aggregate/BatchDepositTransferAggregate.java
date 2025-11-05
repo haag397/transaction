@@ -2,7 +2,7 @@ package ir.ipaam.transaction.domain.aggregate;
 
 import ir.ipaam.transaction.application.command.BatchDepositTransferCommand;
 import ir.ipaam.transaction.application.command.TransactionInquiryCommand;
-import ir.ipaam.transaction.application.command.UpdateDepositTransferStateCommand;
+import ir.ipaam.transaction.application.command.UpdateTransferStateCommand;
 import ir.ipaam.transaction.domain.event.BatchDepositTransferedEvent;
 import ir.ipaam.transaction.domain.event.TransactionStateUpdatedEvent;
 import ir.ipaam.transaction.domain.event.TransactionInquiredEvent;
@@ -88,7 +88,7 @@ public class BatchDepositTransferAggregate {
     }
 
     @CommandHandler
-    public void handle(UpdateDepositTransferStateCommand command) {
+    public void handle(UpdateTransferStateCommand command) {
         // Emit state update event
         AggregateLifecycle.apply(new TransactionStateUpdatedEvent(
                 command.getTransactionId(),

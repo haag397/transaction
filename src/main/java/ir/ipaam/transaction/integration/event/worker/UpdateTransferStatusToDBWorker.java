@@ -2,7 +2,7 @@ package ir.ipaam.transaction.integration.event.worker;
 
 import io.camunda.zeebe.spring.client.annotation.JobWorker;
 import io.camunda.zeebe.spring.client.annotation.Variable;
-import ir.ipaam.transaction.application.command.UpdateDepositTransferStateCommand;
+import ir.ipaam.transaction.application.command.UpdateTransferStateCommand;
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
 import lombok.AllArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -26,7 +26,7 @@ public class UpdateTransferStatusToDBWorker {
 
         TransactionResponseStatus transactionResponseStatus  = TransactionResponseStatus.UPDATED;
 
-        UpdateDepositTransferStateCommand command = new UpdateDepositTransferStateCommand(
+        UpdateTransferStateCommand command = new UpdateTransferStateCommand(
                 transactionId,
                 transactionResponseStatus
         );

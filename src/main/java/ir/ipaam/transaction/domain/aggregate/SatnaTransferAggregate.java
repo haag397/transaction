@@ -2,7 +2,7 @@ package ir.ipaam.transaction.domain.aggregate;
 
 import ir.ipaam.transaction.application.command.SatnaTransferCommand;
 import ir.ipaam.transaction.application.command.TransactionInquiryCommand;
-import ir.ipaam.transaction.application.command.UpdateSatnaTransferStateCommand;
+import ir.ipaam.transaction.application.command.UpdateTransferStateCommand;
 import ir.ipaam.transaction.domain.event.SatnaTransferredEvent;
 import ir.ipaam.transaction.domain.event.TransactionInquiredEvent;
 import ir.ipaam.transaction.domain.event.TransactionStateUpdatedEvent;
@@ -121,7 +121,7 @@ public class SatnaTransferAggregate {
     }
 
     @CommandHandler
-    public void handle(UpdateSatnaTransferStateCommand command) {
+    public void handle(UpdateTransferStateCommand command) {
         // Emit state update event
         AggregateLifecycle.apply(new TransactionStateUpdatedEvent(
                 command.getTransactionId(),

@@ -1,7 +1,7 @@
 package ir.ipaam.transaction.domain.aggregate;
 
 import ir.ipaam.transaction.application.command.PolTransferCommand;
-import ir.ipaam.transaction.application.command.UpdatePolTransferStateCommand;
+import ir.ipaam.transaction.application.command.UpdateTransferStateCommand;
 import ir.ipaam.transaction.domain.event.PolTransferredEvent;
 import ir.ipaam.transaction.domain.event.TransactionStateUpdatedEvent;
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
@@ -82,7 +82,7 @@ public class PolTransferAggregate {
     }
 
     @CommandHandler
-    public void handle(UpdatePolTransferStateCommand command) {
+    public void handle(UpdateTransferStateCommand command) {
         AggregateLifecycle.apply(new TransactionStateUpdatedEvent(
                 command.getTransactionId(),
                 command.getTransactionResponseStatus()
