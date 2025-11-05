@@ -62,6 +62,9 @@ axon:
       deposit-opening-integration:
         mode: subscribing
         source: eventBus
+      transaction-bpmn-integration:
+        mode: subscribing
+        source: eventBus
 #        mode: tracking
 #        source: eventStore
 #         optional: start at tail (to read past events)

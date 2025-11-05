@@ -4,7 +4,7 @@ import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
 import lombok.Value;
 
 @Value
-public class DepositTransferStateUpdatedEvent {
+public class TransactionStateUpdatedEvent {
     String transactionId;
     TransactionResponseStatus transactionResponseStatus;
 }

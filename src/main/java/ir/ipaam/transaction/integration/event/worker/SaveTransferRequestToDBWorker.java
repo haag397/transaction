@@ -5,7 +5,7 @@ import io.camunda.zeebe.spring.client.annotation.Variable;
 import ir.ipaam.transaction.application.command.BatchDepositTransferCommand;
 import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferRequestDTO;
 import ir.ipaam.transaction.integration.client.core.service.CoreService;
-import ir.ipaam.transaction.query.repository.BatchDepositTransferRepository;
+import ir.ipaam.transaction.query.repository.TransactionRepository;
 import lombok.AllArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,7 @@ public class SaveTransferRequestToDBWorker {
 
     private final CommandGateway commandGateway;
     private final CoreService coreService;
-    private final BatchDepositTransferRepository batchDepositTransferRepository;
+    private final TransactionRepository transactionRepository;
 
     @JobWorker(type = "save_to_db")
     public Map<String, Object> saveTransferRequestToDB(
@@ -30,8 +30,7 @@ public class SaveTransferRequestToDBWorker {
             transactionId = java.util.UUID.randomUUID().toString();
         }
 
-        BatchDepositTransferCommand command =
-                new BatchDepositTransferCommand(
+        BatchDepositTransferCommand command = new BatchDepositTransferCommand(
                         transactionId,
                         coreBatchDepositTransferRequestDTO.getDocumentItemType(),
                         coreBatchDepositTransferRequestDTO.getSourceAccount(),

@@ -1,8 +1,10 @@
 package ir.ipaam.transaction.domain.model;
 
-public enum TransferType {
+public enum TransactionType {
     PAYA,
     SATNA,
     POL,
-    ACCOUNT_TRANSFER
+    ACCOUNT_TRANSFER,
+    CARD,
+    WALLET
 }

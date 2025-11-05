@@ -17,20 +17,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/transaction/batch-deposit-transfer")
 @RequiredArgsConstructor
-@Tag(name = "Batch Deposit Transfer", description = "API for batch deposit transfer operations")
 public class BatchDepositTransferController {
 
     private final BatchDepositTransferService batchDepositTransferService;
 
     @PostMapping
-    @Operation(summary = "Create batch deposit transfer", 
-               description = "Initiates a batch deposit transfer transaction")
+    @Operation(summary = "Create batch deposit transfer",
+            description = "Initiates a batch deposit transfer transaction")
     public ResponseEntity<BatchDepositTransferResponseDTO> createBatchDepositTransfer(
             @Valid @RequestBody BatchDepositTransferRequestDTO request) {
-        
+
         BatchDepositTransferResponseDTO response = batchDepositTransferService
                 .createBatchDepositTransfer(request);
-        
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

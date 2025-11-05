@@ -4,7 +4,7 @@ import ir.ipaam.transaction.application.command.BatchDepositTransferCommand;
 import ir.ipaam.transaction.application.command.TransactionInquiryCommand;
 import ir.ipaam.transaction.application.command.UpdateDepositTransferStateCommand;
 import ir.ipaam.transaction.domain.event.BatchDepositTransferedEvent;
-import ir.ipaam.transaction.domain.event.DepositTransferStateUpdatedEvent;
+import ir.ipaam.transaction.domain.event.TransactionStateUpdatedEvent;
 import ir.ipaam.transaction.domain.event.TransactionInquiredEvent;
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
 import ir.ipaam.transaction.integration.client.core.dto.CreditorDTO;
@@ -36,6 +36,9 @@ public class BatchDepositTransferAggregate {
 
     @CommandHandler
     public BatchDepositTransferAggregate(BatchDepositTransferCommand command) {
+        // Deposit-to-Deposit specific validation
+        validateDepositTransfer(command);
+        
         this.transactionId = command.getTransactionId();
         this.documentItemType = command.getDocumentItemType();
         this.sourceAccount = command.getSourceAccount();
@@ -51,6 +54,8 @@ public class BatchDepositTransferAggregate {
                 .transactionId(this.transactionId)
                 .transactionCode(command.getTransactionCode())
                 .transactionDate(command.getTransactionDate())
+                .sourceAmount(this.sourceAmount)
+                .transactionResponseStatus(TransactionResponseStatus.REQUESTED)
                 .build());
     }
 
@@ -59,6 +64,7 @@ public class BatchDepositTransferAggregate {
         this.transactionId = event.getTransactionId();
         this.transactionCode = event.getTransactionCode();
         this.transactionDate = event.getTransactionDate();
+        this.sourceAmount = event.getSourceAmount();
         if (event.getTransactionResponseStatus() != null) {
             this.transactionStatus = event.getTransactionResponseStatus();
         }
@@ -84,14 +90,28 @@ public class BatchDepositTransferAggregate {
     @CommandHandler
     public void handle(UpdateDepositTransferStateCommand command) {
         // Emit state update event
-        AggregateLifecycle.apply(new DepositTransferStateUpdatedEvent(
+        AggregateLifecycle.apply(new TransactionStateUpdatedEvent(
                 command.getTransactionId(),
                 command.getTransactionResponseStatus()
         ));
     }
 
     @EventSourcingHandler
-    public void on(DepositTransferStateUpdatedEvent event) {
+    public void on(TransactionStateUpdatedEvent event) {
         this.transactionStatus = event.getTransactionResponseStatus();
+    }
+
+    // Deposit-to-Deposit specific business validation
+    private void validateDepositTransfer(BatchDepositTransferCommand command) {
+        if (command.getSourceAmount() == null || command.getSourceAmount() <= 0) {
+            throw new IllegalArgumentException("Source amount must be positive");
+        }
+        if (command.getCreditors() == null || command.getCreditors().isEmpty()) {
+            throw new IllegalArgumentException("Creditors list cannot be empty");
+        }
+        if (command.getSourceAccount() == null || command.getSourceAccount().isEmpty()) {
+            throw new IllegalArgumentException("Source account is required");
+        }
+        // Add more Deposit-specific validation as needed
     }
 }

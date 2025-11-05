@@ -6,10 +6,16 @@ import lombok.Value;
 
 @Value
 @Builder
-public class BatchDepositTransferedEvent {
+public class SatnaTransferredEvent {
     String transactionId;
     String transactionDate;
     String transactionCode;
-    Long sourceAmount;
+    Long amount;
+    String receiverName;
+    String receiverLastName;
+    String destinationDepNum;
+    String sourceDepNum;
+    String userReferenceNumber;
     TransactionResponseStatus transactionResponseStatus;
 }
+

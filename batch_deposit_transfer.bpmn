@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Web Modeler" exporterVersion="d45327c" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.7.0">
+  <bpmn:process id="Batch_Deposit_Transfer" name="BatchDepositTransfer" isExecutable="true">
+    <bpmn:extensionElements />
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_1u19nq1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="Event_0ewloxh">
+      <bpmn:incoming>Flow_0aw7dtc</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1u19nq1" sourceRef="StartEvent_1" targetRef="save_to_db" />
+    <bpmn:serviceTask id="save_to_db" name="save to db">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="save_to_db" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1u19nq1</bpmn:incoming>
+      <bpmn:outgoing>Flow_1nfpi89</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="deposit_transfer" name="deposit to deposit">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="deposit_transfer" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0vcd9fv</bpmn:incoming>
+      <bpmn:outgoing>Flow_12y8j4y</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="update_db" name="update db">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="update_db" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0ip35zw</bpmn:incoming>
+      <bpmn:incoming>Flow_1mgmxok</bpmn:incoming>
+      <bpmn:outgoing>Flow_0aw7dtc</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0ip35zw" sourceRef="transaction_inquiry" targetRef="update_db" />
+    <bpmn:serviceTask id="transaction_inquiry" name="transaction inquiry">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="transaction_inquiry" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1fhd2h5</bpmn:incoming>
+      <bpmn:incoming>Flow_0wf6o25</bpmn:incoming>
+      <bpmn:incoming>Flow_177g1n9</bpmn:incoming>
+      <bpmn:incoming>Flow_0b21hh8</bpmn:incoming>
+      <bpmn:incoming>Flow_1g32c8o</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ip35zw</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="Event_0rk46y9" attachedToRef="deposit_transfer">
+      <bpmn:outgoing>Flow_0wf6o25</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_0fu9ph7">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT2M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_1nfpi89" sourceRef="save_to_db" targetRef="Gateway_1r7y2yq" />
+    <bpmn:sequenceFlow id="Flow_0aw7dtc" sourceRef="update_db" targetRef="Event_0ewloxh" />
+    <bpmn:exclusiveGateway id="Gateway_0bfl2wk">
+      <bpmn:incoming>Flow_12y8j4y</bpmn:incoming>
+      <bpmn:incoming>Flow_16nqq58</bpmn:incoming>
+      <bpmn:incoming>Flow_04okag0</bpmn:incoming>
+      <bpmn:incoming>Flow_1bmm3j5</bpmn:incoming>
+      <bpmn:outgoing>Flow_1mgmxok</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1fhd2h5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_1r7y2yq">
+      <bpmn:incoming>Flow_1nfpi89</bpmn:incoming>
+      <bpmn:outgoing>Flow_0vcd9fv</bpmn:outgoing>
+      <bpmn:outgoing>Flow_089qm4m</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0lu6vox</bpmn:outgoing>
+      <bpmn:outgoing>Flow_19mfelo</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0vcd9fv" sourceRef="Gateway_1r7y2yq" targetRef="deposit_transfer">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=type="deposit-to-deposit"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="satna_transfer" name="satna">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="satna_transfer" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_19mfelo</bpmn:incoming>
+      <bpmn:outgoing>Flow_1bmm3j5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="pol_transfer" name="pol">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="pol_transfer" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_089qm4m</bpmn:incoming>
+      <bpmn:outgoing>Flow_16nqq58</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="paya_transfer" name="paya">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="paya_transfer" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0lu6vox</bpmn:incoming>
+      <bpmn:outgoing>Flow_04okag0</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_12y8j4y" sourceRef="deposit_transfer" targetRef="Gateway_0bfl2wk" />
+    <bpmn:sequenceFlow id="Flow_16nqq58" sourceRef="pol_transfer" targetRef="Gateway_0bfl2wk" />
+    <bpmn:sequenceFlow id="Flow_04okag0" sourceRef="paya_transfer" targetRef="Gateway_0bfl2wk" />
+    <bpmn:sequenceFlow id="Flow_1bmm3j5" sourceRef="satna_transfer" targetRef="Gateway_0bfl2wk" />
+    <bpmn:sequenceFlow id="Flow_1mgmxok" sourceRef="Gateway_0bfl2wk" targetRef="update_db">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=accepted=true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1fhd2h5" sourceRef="Gateway_0bfl2wk" targetRef="transaction_inquiry">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=accepted=false</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:boundaryEvent id="Event_1new3f6" attachedToRef="pol_transfer">
+      <bpmn:outgoing>Flow_177g1n9</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1uypr3h">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT2M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="Event_1q6nrk8" attachedToRef="paya_transfer">
+      <bpmn:outgoing>Flow_0b21hh8</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1cfyk0y">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT2M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="Event_0warymi" attachedToRef="satna_transfer">
+      <bpmn:outgoing>Flow_1g32c8o</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_0cgk4wz">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT2M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_089qm4m" sourceRef="Gateway_1r7y2yq" targetRef="pol_transfer">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=type="pol"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0lu6vox" sourceRef="Gateway_1r7y2yq" targetRef="paya_transfer">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=type="paya"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_19mfelo" sourceRef="Gateway_1r7y2yq" targetRef="satna_transfer">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=type="satna"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0wf6o25" sourceRef="Event_0rk46y9" targetRef="transaction_inquiry" />
+    <bpmn:sequenceFlow id="Flow_177g1n9" sourceRef="Event_1new3f6" targetRef="transaction_inquiry" />
+    <bpmn:sequenceFlow id="Flow_0b21hh8" sourceRef="Event_1q6nrk8" targetRef="transaction_inquiry" />
+    <bpmn:sequenceFlow id="Flow_1g32c8o" sourceRef="Event_0warymi" targetRef="transaction_inquiry" />
+  </bpmn:process>
+</bpmn:definitions>
+
