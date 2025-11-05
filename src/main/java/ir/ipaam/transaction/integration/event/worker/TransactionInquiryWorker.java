@@ -4,7 +4,6 @@ import io.camunda.zeebe.spring.client.annotation.JobWorker;
 import io.camunda.zeebe.spring.client.annotation.Variable;
 import ir.ipaam.transaction.domain.event.TransactionInquiredEvent;
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
-import ir.ipaam.transaction.integration.client.core.dto.CoreTransactionInquiryRequestDTO;
 import ir.ipaam.transaction.integration.client.core.dto.CoreTransactionInquiryResponseDTO;
 import ir.ipaam.transaction.integration.client.core.service.CoreService;
 import lombok.AllArgsConstructor;
@@ -21,10 +20,12 @@ public class TransactionInquiryWorker {
     private final CoreService coreService;
 
     @JobWorker(type = "transaction_inquiry")
-    public Map<String, Object> transactionInquiry(
-            @Variable CoreTransactionInquiryRequestDTO coreTransactionInquiryRequestDTO
-    ){
-        CoreTransactionInquiryResponseDTO response = coreService.transactionInquiry(coreTransactionInquiryRequestDTO);
+    public Map<String, Object> transactionInquiry(@Variable String transactionId) {
+        if (transactionId == null || transactionId.isBlank()) {
+            throw new RuntimeException("Transaction ID is required for inquiry");
+        }
+
+        CoreTransactionInquiryResponseDTO response = coreService.transactionInquiry(transactionId);
 
         commandGateway.sendAndWait(new TransactionInquiredEvent(
                 response.getTransactionDate(),
@@ -32,7 +33,8 @@ public class TransactionInquiryWorker {
                 TransactionResponseStatus.REQUESTED
         ));
         return Map.of(
-                "transactionDate", response.getTransactionStatus(),
+                "transactionId", transactionId,
+                "transactionDate", response.getTransactionDate(),
                 "transactionCode", response.getTransactionCode(),
                 "status", response.getTransactionStatus()
         );

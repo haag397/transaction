@@ -18,17 +18,6 @@ public class CoreSatnaTransferResponseDTO {
     private String destinationDepNum;
     private String userReferenceNumber;
     private String transactionCode;
-    private StatusDTO status;
-    
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class StatusDTO {
-        private String code;
-        private String message;
-        private String description;
-    }
 }
 
 

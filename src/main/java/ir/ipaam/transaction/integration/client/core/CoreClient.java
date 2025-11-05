@@ -6,10 +6,10 @@ import ir.ipaam.transaction.integration.client.core.dto.CorePolTransferRequestDT
 import ir.ipaam.transaction.integration.client.core.dto.CorePolTransferResponseDTO;
 import ir.ipaam.transaction.integration.client.core.dto.CoreSatnaTransferRequestDTO;
 import ir.ipaam.transaction.integration.client.core.dto.CoreSatnaTransferResponseDTO;
-import ir.ipaam.transaction.integration.client.core.dto.CoreTransactionInquiryRequestDTO;
 import ir.ipaam.transaction.integration.client.core.dto.CoreTransactionInquiryResponseDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -19,11 +19,11 @@ public interface CoreClient {
     CoreBatchDepositTransferResponseDTO batchDepositTransfer(@RequestBody CoreBatchDepositTransferRequestDTO request);
     
     @GetMapping("/transaction/{transactionId}")
-    CoreTransactionInquiryResponseDTO transactionInquiry(@RequestBody CoreTransactionInquiryRequestDTO request);
+    CoreTransactionInquiryResponseDTO transactionInquiry(@PathVariable String transactionId);
     
     @PostMapping("/satna")
     CoreSatnaTransferResponseDTO satnaTransfer(@RequestBody CoreSatnaTransferRequestDTO request);
 
-    @PostMapping("/pon")
+    @PostMapping("/pol")
     CorePolTransferResponseDTO polTransfer(@RequestBody CorePolTransferRequestDTO request);
 }

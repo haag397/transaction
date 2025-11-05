@@ -65,6 +65,9 @@ axon:
       transaction-bpmn-integration:
         mode: subscribing
         source: eventBus
+      transaction-projections:
+        mode: subscribing
+        source: eventBus
 #        mode: tracking
 #        source: eventStore
 #         optional: start at tail (to read past events)

@@ -27,9 +27,9 @@ public class CoreServiceImpl implements CoreService {
     }
 
     @Override
-    public CoreTransactionInquiryResponseDTO transactionInquiry(CoreTransactionInquiryRequestDTO request) {
+    public CoreTransactionInquiryResponseDTO transactionInquiry(String transactionId) {
         try {
-            return coreClient.transactionInquiry(request);
+            return coreClient.transactionInquiry(transactionId);
         } catch (FeignException feignException) {
             handleFeignException(feignException, "خطا در فراخوانی سرویس استعالم تراکنش");
         }

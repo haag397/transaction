@@ -26,7 +26,7 @@ import java.util.UUID;
 @Builder
 public class Transaction {
     @Id
-    @Column(nullable = false)
+    @Column(name = "id", updatable = false, nullable = false, unique = true)
     private UUID id;
 
     private String transactionId;
@@ -38,8 +38,14 @@ public class Transaction {
     private String description;
     private String sourceDescription;
     private String extraDescription;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Object> extraInformation;
 
     private String destinationAccount;
+//    @Column(name = "destination_accounts", columnDefinition = "jsonb")
+//    @JdbcTypeCode(SqlTypes.JSON)
+//    private List<String> destinationAccount;
     private Long destinationAmount;
     private String destinationComment;
 
@@ -47,10 +53,6 @@ public class Transaction {
 
     private TransactionType type; //paya satna pol card to cart account_transfer
     private TransactionSubType subType; // category of transaction like safte charge
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Map<String, Object> extraInformation;
 
     private DetailType detail; //reason
     private String senderReturnDepositNumber; //شماره سپرده بازگشت وجه

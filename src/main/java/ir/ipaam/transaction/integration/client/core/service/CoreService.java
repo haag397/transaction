@@ -6,12 +6,11 @@ import ir.ipaam.transaction.integration.client.core.dto.CorePolTransferRequestDT
 import ir.ipaam.transaction.integration.client.core.dto.CorePolTransferResponseDTO;
 import ir.ipaam.transaction.integration.client.core.dto.CoreSatnaTransferRequestDTO;
 import ir.ipaam.transaction.integration.client.core.dto.CoreSatnaTransferResponseDTO;
-import ir.ipaam.transaction.integration.client.core.dto.CoreTransactionInquiryRequestDTO;
 import ir.ipaam.transaction.integration.client.core.dto.CoreTransactionInquiryResponseDTO;
 
 public interface CoreService {
     CoreBatchDepositTransferResponseDTO batchDepositTransfer(CoreBatchDepositTransferRequestDTO request);
-    CoreTransactionInquiryResponseDTO transactionInquiry(CoreTransactionInquiryRequestDTO request);
+    CoreTransactionInquiryResponseDTO transactionInquiry(String transactionId);
     CoreSatnaTransferResponseDTO satnaTransfer(CoreSatnaTransferRequestDTO request);
     CorePolTransferResponseDTO polTransfer(CorePolTransferRequestDTO request);
 }
