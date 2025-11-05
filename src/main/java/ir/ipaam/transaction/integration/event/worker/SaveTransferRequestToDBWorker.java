@@ -47,8 +47,6 @@ public class SaveTransferRequestToDBWorker {
 
         return Map.of(
                 "transactionId", transactionId,
-                // Ensure 'type' exists for the routing gateway
-                "type", "deposit-to-deposit",
                 "status", "REQUESTED"
         );
     }
