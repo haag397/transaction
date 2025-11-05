@@ -9,16 +9,14 @@ import ir.ipaam.transaction.integration.client.core.service.CoreService;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
+import ir.ipaam.transaction.utills.TransactionIdGenerator;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class SatnaTransferService {
 
     private final CommandGateway commandGateway;
@@ -26,7 +24,7 @@ public class SatnaTransferService {
 
     public SatnaTransferResponseDTO createSatnaTransfer(SatnaTransferRequestDTO request) {
         // Generate transaction ID
-        String transactionId = UUID.randomUUID().toString();
+        String transactionId = TransactionIdGenerator.generate();
 
         // Call core service first to process the transfer
         CoreSatnaTransferRequestDTO coreRequest = CoreSatnaTransferRequestDTO.builder()
@@ -59,9 +57,9 @@ public class SatnaTransferService {
             throw new RuntimeException("Failed to process SATNA transfer");
         }
 
-        // Create and send command to SATNA aggregate
+        // Create and send command to SATNA aggregate (always use our generated aggregate identifier)
         SatnaTransferCommand command = new SatnaTransferCommand(
-                coreResponse.getTransactionId() != null ? coreResponse.getTransactionId() : transactionId,
+                transactionId,
                 request.getAmount(),
                 request.getDestinationDepNum(),
                 request.getReceiverName(),
@@ -86,7 +84,11 @@ public class SatnaTransferService {
                 coreResponse.getUserReferenceNumber()
         );
 
-        commandGateway.sendAndWait(command);
+        try {
+            commandGateway.sendAndWait(command);
+        } catch (org.axonframework.modelling.command.AggregateStreamCreationException duplicate) {
+            // Idempotent create: aggregate with this identifier already exists
+        }
 
         return SatnaTransferResponseDTO.builder()
                 .transactionId(coreResponse.getTransactionId())

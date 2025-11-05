@@ -17,25 +17,25 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class BatchDepositTransferRequestDTO {
-    @NotBlank(message = "Document item type is required")
+//    @NotBlank(message = "Document item type is required")
     private String documentItemType;
     
-    @NotBlank(message = "Source account is required")
+//    @NotBlank(message = "Source account is required")
     private String sourceAccount;
     
-    @NotBlank(message = "Branch code is required")
+//    @NotBlank(message = "Branch code is required")
     private String branchCode;
     
-    @NotNull(message = "Source amount is required")
-    @Positive(message = "Source amount must be positive")
+//    @NotNull(message = "Source amount is required")
+//    @Positive(message = "Source amount must be positive")
     private Long sourceAmount;
     
     private String sourceComment;
-    
-    @NotBlank(message = "Transfer bill number is required")
+
+//    @NotBlank(message = "Transfer bill number is required")
     private String transferBillNumber;
     
-    @NotEmpty(message = "Creditors list cannot be empty")
+//    @NotEmpty(message = "Creditors list cannot be empty")
     private List<CreditorDTO> creditors;
 }
 

@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/transaction/pon-transfer")
+@RequestMapping("/api/transaction/pol-transfer")
 @RequiredArgsConstructor
 @Tag(name = "PON Transfer", description = "API for PON transfer operations")
-public class PonTransferController {
+public class PolTransferController {
 
     private final PolTransferService polTransferService;
 

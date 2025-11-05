@@ -9,13 +9,12 @@ import ir.ipaam.transaction.integration.client.core.service.CoreService;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
+
+import static ir.ipaam.transaction.utills.TransactionIdGenerator.generate;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class BatchDepositTransferService {
 
     private final CommandGateway commandGateway;
@@ -23,7 +22,7 @@ public class BatchDepositTransferService {
 
     public BatchDepositTransferResponseDTO createBatchDepositTransfer(BatchDepositTransferRequestDTO request) {
         // Generate transaction ID
-        String transactionId = UUID.randomUUID().toString();
+        String transactionId = generate();
 
         // Call core service first to process the transfer
         CoreBatchDepositTransferRequestDTO coreRequest = CoreBatchDepositTransferRequestDTO.builder()
@@ -43,9 +42,9 @@ public class BatchDepositTransferService {
             throw new RuntimeException("Failed to process batch deposit transfer");
         }
 
-        // Create and send command to aggregate
+        // Create and send command to aggregate (always use our generated aggregate identifier)
         BatchDepositTransferCommand command = new BatchDepositTransferCommand(
-                coreResponse.getTransactionId() != null ? coreResponse.getTransactionId() : transactionId,
+                transactionId,
                 request.getDocumentItemType(),
                 request.getSourceAccount(),
                 request.getBranchCode(),
@@ -57,7 +56,11 @@ public class BatchDepositTransferService {
                 coreResponse.getTransactionDate()
         );
 
-        commandGateway.sendAndWait(command);
+        try {
+            commandGateway.sendAndWait(command);
+        } catch (org.axonframework.modelling.command.AggregateStreamCreationException duplicate) {
+            // Idempotent create: aggregate with this identifier already exists
+        }
 
         return BatchDepositTransferResponseDTO.builder()
                 .transactionId(coreResponse.getTransactionId())

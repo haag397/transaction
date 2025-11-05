@@ -4,7 +4,6 @@ import ir.ipaam.transaction.domain.model.DetailType;
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
 import ir.ipaam.transaction.domain.model.TransactionSubType;
 import ir.ipaam.transaction.domain.model.TransactionType;
-import ir.ipaam.transaction.integration.client.core.dto.CreditorDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +13,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 

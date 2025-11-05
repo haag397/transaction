@@ -12,7 +12,8 @@ import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
-import java.util.UUID;
+
+import static ir.ipaam.transaction.utills.TransactionIdGenerator.generate;
 
 @Component
 @AllArgsConstructor
@@ -31,7 +32,7 @@ public class SatnaTransferWorker {
         // Generate transactionId if not provided
         String transactionId = satnaTransferRequest.getTransactionId();
         if (transactionId == null || transactionId.isEmpty()) {
-            transactionId = UUID.randomUUID().toString();
+            transactionId = generate();
             satnaTransferRequest.setTransactionId(transactionId);
         }
 
@@ -42,9 +43,9 @@ public class SatnaTransferWorker {
             throw new RuntimeException("Failed to process SATNA transfer - core service returned null");
         }
 
-        // Create and send command to SATNA aggregate
+        // Create and send command to SATNA aggregate (always use our generated aggregate identifier)
         SatnaTransferCommand command = new SatnaTransferCommand(
-                coreResponse.getTransactionId() != null ? coreResponse.getTransactionId() : transactionId,
+                transactionId,
                 satnaTransferRequest.getAmount(),
                 satnaTransferRequest.getDestinationDepNum(),
                 satnaTransferRequest.getReceiverName(),

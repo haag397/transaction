@@ -4,7 +4,6 @@ import ir.ipaam.transaction.api.write.dto.BatchDepositTransferRequestDTO;
 import ir.ipaam.transaction.api.write.dto.BatchDepositTransferResponseDTO;
 import ir.ipaam.transaction.application.service.BatchDepositTransferService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

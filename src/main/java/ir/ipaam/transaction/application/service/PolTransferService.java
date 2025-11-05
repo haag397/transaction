@@ -12,7 +12,7 @@ import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
+import ir.ipaam.transaction.utills.TransactionIdGenerator;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ public class PolTransferService {
     public PolTransferResponseDTO createPonTransfer(PolTransferRequestDTO request) {
         String transactionId = request.getTransactionId();
         if (transactionId == null || transactionId.isBlank()) {
-            transactionId = UUID.randomUUID().toString();
+            transactionId = TransactionIdGenerator.generate();
         }
 
         Boolean withOutInquiry = request.getWithOutInquiry() != null ? request.getWithOutInquiry() : Boolean.FALSE;
