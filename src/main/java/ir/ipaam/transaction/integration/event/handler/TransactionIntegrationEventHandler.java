@@ -16,7 +16,7 @@ import java.util.Map;
 @ProcessingGroup("transaction-bpmn-integration")
 @RequiredArgsConstructor
 @Slf4j
-public class TransactionBpmnIntegrationEventHandler {
+public class TransactionIntegrationEventHandler {
 
     private final ZeebeClient zeebe;
 

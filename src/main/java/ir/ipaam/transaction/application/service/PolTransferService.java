@@ -53,10 +53,8 @@ public class PolTransferService {
             throw new RuntimeException("Failed to process PON transfer");
         }
 
-        String finalTransactionId = coreResponse.getTransactionId() != null ? coreResponse.getTransactionId() : transactionId;
-
         PolTransferCommand command = new PolTransferCommand(
-                finalTransactionId,
+                transactionId,
                 request.getIdentifier(),
                 request.getIdentifierType(),
                 request.getCustomerNumber(),
@@ -74,13 +72,10 @@ public class PolTransferService {
 
         commandGateway.sendAndWait(command);
 
-        log.info("PON transfer initiated successfully for transactionId: {}", finalTransactionId);
+        log.info("PON transfer initiated successfully for transactionId: {}", transactionId);
 
         return PolTransferResponseDTO.builder()
-                .transactionId(finalTransactionId)
                 .referenceNumber(coreResponse.getReferenceNumber())
-                .status(coreResponse.getStatus())
-                .message(coreResponse.getMessage())
                 .build();
     }
 }

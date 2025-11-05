@@ -4,7 +4,6 @@ import io.camunda.zeebe.spring.client.annotation.JobWorker;
 import io.camunda.zeebe.spring.client.annotation.Variable;
 import ir.ipaam.transaction.application.command.UpdateDepositTransferStateCommand;
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
-import ir.ipaam.transaction.integration.client.core.dto.CoreTransactionInquiryResponseDTO;
 import lombok.AllArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.stereotype.Component;
@@ -19,11 +18,10 @@ public class UpdateTransferStatusToDBWorker {
 
     @JobWorker(type = "update_db")
     public Map<String, Object> updateDepositTransferStatus(
-            @Variable String transactionId,
-            @Variable CoreTransactionInquiryResponseDTO inquiryResponse
+            @Variable String transactionId
     ) {
-        if (transactionId == null || inquiryResponse == null) {
-            throw new RuntimeException("Transaction ID and inquiry response are required");
+        if (transactionId == null || transactionId.isBlank()) {
+            throw new RuntimeException("Transaction ID is required");
         }
 
         TransactionResponseStatus transactionResponseStatus  = TransactionResponseStatus.UPDATED;

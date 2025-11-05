@@ -10,8 +10,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class PolTransferResponseDTO {
-    private String transactionId;
     private String referenceNumber;
-    private String status;
-    private String message;
 }
