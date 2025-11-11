@@ -1,6 +1,5 @@
 package ir.ipaam.transaction.query.model;
 
-import ir.ipaam.transaction.domain.model.DetailType;
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
 import ir.ipaam.transaction.domain.model.TransactionSubType;
 import ir.ipaam.transaction.domain.model.TransactionType;
@@ -26,36 +25,22 @@ public class Transaction {
     @Id
     @Column(name = "id", updatable = false, nullable = false, unique = true)
     private UUID id;
-
     private String transactionId;
     private String source; //source deposit card paya:sheba number deposit number
+    private String sourceTitle;
     private String destination;//dest deposit card paya:sheba number deposit number
     private String destinationTitle;//receiver name
     private Long amount;
-
     private String description;
     private String sourceDescription;
     private String extraDescription;
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private Map<String, Object> extraInformation;
-
-    private String destinationAccount;
-//    @Column(name = "destination_accounts", columnDefinition = "jsonb")
-//    @JdbcTypeCode(SqlTypes.JSON)
-//    private List<String> destinationAccount;
-    private Long destinationAmount;
-    private String destinationComment;
-
+    private String reason; //reason
     private TransactionResponseStatus status;
-
     private TransactionType type; //paya satna pol card to cart account_transfer
     private TransactionSubType subType; // category of transaction like safte charge
-
-    private DetailType detail; //reason
-    private String senderReturnDepositNumber; //شماره سپرده بازگشت وجه
-    private String transactionChannelType;//INTERNET MOBILE TELLER TELEPHONE
-
     private LocalDateTime transactionDate;
     private String transactionCode;
 }

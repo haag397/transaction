@@ -72,7 +72,7 @@ public class PolTransferService {
 
         commandGateway.sendAndWait(command);
 
-        log.info("PON transfer initiated successfully for transactionId: {}", transactionId);
+        log.info("POL transfer initiated successfully for transactionId: {}", transactionId);
 
         return PolTransferResponseDTO.builder()
                 .referenceNumber(coreResponse.getReferenceNumber())

@@ -25,12 +25,20 @@ public class DepositTransferWorker {
             @Variable CoreBatchDepositTransferRequestDTO coreBatchDepositTransferRequestDTO
     ) {
         CoreBatchDepositTransferResponseDTO response = coreService.batchDepositTransfer(coreBatchDepositTransferRequestDTO);
+//        commandGateway.sendAndWait(
+//                BatchDepositTransferedEvent.builder()
+//                        .transactionId(response.getTransactionId())
+//                        .transactionDate(response.getTransactionDate())
+//                        .transactionCode(response.getTransactionCode())
+//                        .transactionResponseStatus(TransactionResponseStatus.CALL_CORE).build()
+//        );
         commandGateway.sendAndWait(
-                BatchDepositTransferedEvent.builder()
-                        .transactionId(response.getTransactionId())
-                        .transactionDate(response.getTransactionDate())
-                        .transactionCode(response.getTransactionCode())
-                        .transactionResponseStatus(TransactionResponseStatus.CALL_CORE).build()
+                new BatchDepositTransferedEvent(
+                        response.getTransactionId(),
+                        response.getTransactionDate(),
+                        response.getTransactionCode(),
+                        TransactionResponseStatus.CALL_CORE
+                        )
         );
         return Map.of(
                 "transactionId", response.getTransactionId(),

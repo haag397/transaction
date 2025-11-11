@@ -30,7 +30,6 @@ public class TransactionProjection {
 
     @EventHandler
     public void on(BatchDepositTransferedEvent event) {
-        log.info("[Projection] BatchDepositTransferedEvent txId={}", event.getTransactionId());
 
         LocalDateTime when = parseIsoDate(event.getTransactionDate());
 
@@ -39,9 +38,12 @@ public class TransactionProjection {
                 .transactionId(event.getTransactionId())
                 .transactionCode(event.getTransactionCode())
                 .transactionDate(when)
-                .amount(event.getSourceAmount())
+                .amount(event.getAmount())
                 .type(TransactionType.ACCOUNT_TRANSFER)
-                .status(Optional.ofNullable(event.getTransactionResponseStatus()).orElse(TransactionResponseStatus.REQUESTED))
+                .description(event.getDescription())
+                .reason(event.getReason())
+                .destinationTitle(event.getDestinationTitle())
+                .status(Optional.ofNullable(event.getStatus()).orElse(TransactionResponseStatus.REQUESTED))
                 .build();
 
         transactionRepository.save(tx);
@@ -49,7 +51,6 @@ public class TransactionProjection {
 
     @EventHandler
     public void on(SatnaTransferredEvent event) {
-        log.info("[Projection] SatnaTransferredEvent txId={}", event.getTransactionId());
 
         LocalDateTime when = parseIsoDate(event.getTransactionDate());
         String title = String.format("%s %s",
@@ -72,7 +73,6 @@ public class TransactionProjection {
 
     @EventHandler
     public void on(PolTransferredEvent event) {
-        log.info("[Projection] PolTransferredEvent txId={}", event.getTransactionId());
 
         // POL events currently do not carry ISO date/time; omit when for now
         Transaction tx = Transaction.builder()
@@ -90,7 +90,6 @@ public class TransactionProjection {
 
     @EventHandler
     public void on(TransactionStateUpdatedEvent event) {
-        log.info("[Projection] TransactionStateUpdatedEvent txId={} status={}", event.getTransactionId(), event.getTransactionResponseStatus());
 
         transactionRepository.findByTransactionId(event.getTransactionId())
                 .ifPresent(tx -> {

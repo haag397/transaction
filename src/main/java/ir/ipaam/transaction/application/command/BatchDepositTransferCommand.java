@@ -1,22 +1,24 @@
 package ir.ipaam.transaction.application.command;
 
-import ir.ipaam.transaction.integration.client.core.dto.CreditorDTO;
 import lombok.Value;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
-import java.util.List;
+import java.util.Map;
 
 @Value
 public class BatchDepositTransferCommand {
     @TargetAggregateIdentifier
     String transactionId;
-    String documentItemType;
-    String sourceAccount;
-    String branchCode;
-    Long sourceAmount;
-    String sourceComment;
-    String transferBillNumber;
-    List<CreditorDTO> creditors;
+    String source;
+    String sourceTitle;
+    String destination;
+    String destinationTitle;
+    Long amount;
+    String description;
+    String sourceDescription;
+    String extraDescription;
+    Map<String, Object> extraInformation;
+    String reason;
     String transactionCode;
     String transactionDate;
 }

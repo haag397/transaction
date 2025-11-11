@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.CompletableFuture;
+
 @RestController
 @RequestMapping("/api/transaction/batch-deposit-transfer")
 @RequiredArgsConstructor
@@ -21,14 +23,11 @@ public class BatchDepositTransferController {
     private final BatchDepositTransferService batchDepositTransferService;
 
     @PostMapping
-    @Operation(summary = "Create batch deposit transfer",
-            description = "Initiates a batch deposit transfer transaction")
-    public ResponseEntity<BatchDepositTransferResponseDTO> createBatchDepositTransfer(
+    public CompletableFuture<ResponseEntity<BatchDepositTransferResponseDTO>> createBatchDepositTransfer(
             @Valid @RequestBody BatchDepositTransferRequestDTO request) {
 
-        BatchDepositTransferResponseDTO response = batchDepositTransferService
-                .createBatchDepositTransfer(request);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return batchDepositTransferService
+                .createBatchDepositTransfer(request)
+                .thenApply(ResponseEntity::ok);
     }
 }

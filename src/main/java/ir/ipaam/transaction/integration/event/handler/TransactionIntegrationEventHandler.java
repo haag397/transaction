@@ -4,7 +4,6 @@ import io.camunda.zeebe.client.ZeebeClient;
 import ir.ipaam.transaction.domain.event.BatchDepositTransferedEvent;
 import ir.ipaam.transaction.domain.event.SatnaTransferredEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.stereotype.Component;
@@ -15,7 +14,6 @@ import java.util.Map;
 @Component
 @ProcessingGroup("transaction-bpmn-integration")
 @RequiredArgsConstructor
-@Slf4j
 public class TransactionIntegrationEventHandler {
 
     private final ZeebeClient zeebe;
@@ -23,8 +21,6 @@ public class TransactionIntegrationEventHandler {
     @EventHandler
     public void on(BatchDepositTransferedEvent event) {
         try {
-            log.info("Starting BPMN process for BatchDepositTransferedEvent with transactionId: {}", event.getTransactionId());
-            
             zeebe.newCreateInstanceCommand()
                     .bpmnProcessId("Batch_Deposit_Transfer")
                     .latestVersion()
@@ -33,15 +29,12 @@ public class TransactionIntegrationEventHandler {
                             "type", "deposit-to-deposit",
                             "transactionDate", event.getTransactionDate() != null ? event.getTransactionDate() : "",
                             "transactionCode", event.getTransactionCode() != null ? event.getTransactionCode() : "",
-                            "amount", event.getSourceAmount() != null ? event.getSourceAmount() : 0L,
+                            "amount", event.getAmount() != null ? event.getAmount() : 0L,
                             "accepted", false
                     ))
                     .send()
                     .join();
-            
-            log.info("BPMN process started successfully for BatchDepositTransfer with transactionId: {}", event.getTransactionId());
         } catch (Exception e) {
-            log.error("Failed to start BPMN process for BatchDepositTransfer with transactionId: {}", event.getTransactionId(), e);
             throw new RuntimeException("Batch deposit transfer workflow failed", e);
         }
     }
@@ -49,8 +42,6 @@ public class TransactionIntegrationEventHandler {
     @EventHandler
     public void on(SatnaTransferredEvent event) {
         try {
-            log.info("Starting BPMN process for SatnaTransferredEvent with transactionId: {}", event.getTransactionId());
-            
             Map<String, Object> variables = new HashMap<>();
             variables.put("transactionId", event.getTransactionId());
             variables.put("type", "satna");
@@ -70,10 +61,7 @@ public class TransactionIntegrationEventHandler {
                     .variables(variables)
                     .send()
                     .join();
-            
-            log.info("BPMN process started successfully for SatnaTransfer with transactionId: {}", event.getTransactionId());
         } catch (Exception e) {
-            log.error("Failed to start BPMN process for SatnaTransfer with transactionId: {}", event.getTransactionId(), e);
             throw new RuntimeException("SATNA transfer workflow failed", e);
         }
     }
