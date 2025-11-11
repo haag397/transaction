@@ -70,7 +70,7 @@ public class SatnaTransferAggregate {
         this.senderNameOrCompanyType = command.getSenderNameOrCompanyType();
         this.senderFamilyNameOrCompanyName = command.getSenderFamilyNameOrCompanyName();
         this.isFromBox = command.getIsFromBox();
-        this.transactionStatus = TransactionResponseStatus.REQUESTED;
+        this.transactionStatus = TransactionResponseStatus.INPROGRESS;
 
         // Emit SATNA-specific event
         AggregateLifecycle.apply(SatnaTransferredEvent.builder()
@@ -83,7 +83,7 @@ public class SatnaTransferAggregate {
                 .destinationDepNum(this.destinationDepNum)
                 .sourceDepNum(this.sourceDepNum)
                 .userReferenceNumber(command.getUserReferenceNumber())
-                .transactionResponseStatus(TransactionResponseStatus.REQUESTED)
+                .transactionResponseStatus(TransactionResponseStatus.INPROGRESS)
                 .build());
     }
 
@@ -109,7 +109,7 @@ public class SatnaTransferAggregate {
         AggregateLifecycle.apply(new TransactionInquiredEvent(
                 this.transactionDate,
                 this.transactionCode,
-                TransactionResponseStatus.TRANSACTION_INQUIRY
+                TransactionResponseStatus.INPROGRESS
         ));
     }
 

@@ -43,7 +43,7 @@ public class TransactionProjection {
                 .description(event.getDescription())
                 .reason(event.getReason())
                 .destinationTitle(event.getDestinationTitle())
-                .status(Optional.ofNullable(event.getStatus()).orElse(TransactionResponseStatus.REQUESTED))
+                .status(Optional.ofNullable(event.getStatus()).orElse(TransactionResponseStatus.INPROGRESS))
                 .build();
 
         transactionRepository.save(tx);
@@ -65,7 +65,7 @@ public class TransactionProjection {
                 .amount(event.getAmount())
                 .destinationTitle(title.isEmpty() ? null : title)
                 .type(TransactionType.SATNA)
-                .status(Optional.ofNullable(event.getTransactionResponseStatus()).orElse(TransactionResponseStatus.REQUESTED))
+                .status(Optional.ofNullable(event.getTransactionResponseStatus()).orElse(TransactionResponseStatus.INPROGRESS))
                 .build();
 
         transactionRepository.save(tx);
@@ -82,7 +82,7 @@ public class TransactionProjection {
                 .destination(event.getDestIban())
                 .destinationTitle(event.getCreditorFullName())
                 .type(TransactionType.POL)
-                .status(Optional.ofNullable(event.getTransactionResponseStatus()).orElse(TransactionResponseStatus.REQUESTED))
+                .status(Optional.ofNullable(event.getTransactionResponseStatus()).orElse(TransactionResponseStatus.INPROGRESS))
                 .build();
 
         transactionRepository.save(tx);

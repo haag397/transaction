@@ -4,13 +4,14 @@ import io.camunda.zeebe.spring.client.annotation.JobWorker;
 import io.camunda.zeebe.spring.client.annotation.Variable;
 import ir.ipaam.transaction.application.command.BatchDepositTransferCommand;
 import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferRequestDTO;
-import ir.ipaam.transaction.integration.client.core.service.CoreService;
-import ir.ipaam.transaction.query.repository.TransactionRepository;
-import ir.ipaam.transaction.utills.TransactionIdGenerator;
+import ir.ipaam.transaction.integration.client.core.dto.CreditorDTO;
 import lombok.AllArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.modelling.command.AggregateStreamCreationException;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static ir.ipaam.transaction.utills.TransactionIdGenerator.generate;
@@ -20,8 +21,6 @@ import static ir.ipaam.transaction.utills.TransactionIdGenerator.generate;
 public class SaveTransferRequestToDBWorker {
 
     private final CommandGateway commandGateway;
-    private final CoreService coreService;
-    private final TransactionRepository transactionRepository;
 
     @JobWorker(type = "save_to_db")
     public Map<String, Object> saveTransferRequestToDB(
@@ -33,26 +32,69 @@ public class SaveTransferRequestToDBWorker {
         if (coreBatchDepositTransferRequestDTO != null && coreBatchDepositTransferRequestDTO.getTransactionId() != null && !coreBatchDepositTransferRequestDTO.getTransactionId().isEmpty()) {
             transactionId = coreBatchDepositTransferRequestDTO.getTransactionId();
         }
-        if (transactionId == null || transactionId.isEmpty()) transactionId = generate();
+        if (transactionId == null || transactionId.isEmpty()) {
+            transactionId = generate();
+        }
 
         // If DTO is missing, skip aggregate creation (task may be invoked from a generic flow)
         if (coreBatchDepositTransferRequestDTO != null) {
+            // Prepare extraInformation map from DTO fields
+            Map<String, Object> extraInformation = new HashMap<>();
+            if (coreBatchDepositTransferRequestDTO.getDocumentItemType() != null) {
+                extraInformation.put("documentItemType", coreBatchDepositTransferRequestDTO.getDocumentItemType());
+            }
+            if (coreBatchDepositTransferRequestDTO.getBranchCode() != null) {
+                extraInformation.put("branchCode", coreBatchDepositTransferRequestDTO.getBranchCode());
+            }
+            if (coreBatchDepositTransferRequestDTO.getTransferBillNumber() != null) {
+                extraInformation.put("transferBillNumber", coreBatchDepositTransferRequestDTO.getTransferBillNumber());
+            }
+            if (coreBatchDepositTransferRequestDTO.getCreditors() != null) {
+                extraInformation.put("creditors", coreBatchDepositTransferRequestDTO.getCreditors());
+            }
+
+            // Extract values from first creditor if available
+            List<CreditorDTO> creditors = coreBatchDepositTransferRequestDTO.getCreditors();
+            String destination = null;
+            String destinationTitle = null;
+            String extraDescription = null;
+            
+            if (creditors != null && !creditors.isEmpty()) {
+                CreditorDTO firstCreditor = creditors.get(0);
+                destination = firstCreditor.getDestinationAccount();
+                destinationTitle = firstCreditor.getDestinationComment();
+                // Aggregate destination comments from all creditors for extraDescription
+                if (creditors.size() > 1) {
+                    extraDescription = creditors.stream()
+                            .map(CreditorDTO::getDestinationComment)
+                            .filter(comment -> comment != null && !comment.isEmpty())
+                            .reduce((c1, c2) -> c1 + "; " + c2)
+                            .orElse(null);
+                } else {
+                    extraDescription = firstCreditor.getDestinationComment();
+                }
+            }
+
+            // Map DTO to new command structure
             BatchDepositTransferCommand command = new BatchDepositTransferCommand(
-                            transactionId,
-                            coreBatchDepositTransferRequestDTO.getDocumentItemType(),
-                            coreBatchDepositTransferRequestDTO.getSourceAccount(),
-                            coreBatchDepositTransferRequestDTO.getBranchCode(),
-                            coreBatchDepositTransferRequestDTO.getSourceAmount(),
-                            coreBatchDepositTransferRequestDTO.getSourceComment(),
-                            coreBatchDepositTransferRequestDTO.getTransferBillNumber(),
-                            coreBatchDepositTransferRequestDTO.getCreditors(),
-                            null,
-                            null
-                    );
+                    transactionId,                                          // transactionId
+                    coreBatchDepositTransferRequestDTO.getSourceAccount(),  // source
+                    null,                                                   // sourceTitle (not provided)
+                    destination,                                            // destination (from first creditor)
+                    destinationTitle,                                       // destinationTitle (from first creditor)
+                    coreBatchDepositTransferRequestDTO.getSourceAmount(),  // amount
+                    coreBatchDepositTransferRequestDTO.getSourceComment(),  // description
+                    null,                                                   // sourceDescription
+                    extraDescription,                                       // extraDescription (from creditors)
+                    extraInformation,                                       // extraInformation
+                    null,                                                   // reason
+                    null,                                                   // transactionCode (set later by workflow/core)
+                    null                                                    // transactionDate (set later by workflow/core)
+            );
 
             try {
                 commandGateway.sendAndWait(command);
-            } catch (org.axonframework.modelling.command.AggregateStreamCreationException duplicate) {
+            } catch (AggregateStreamCreationException duplicate) {
                 // Idempotent create: aggregate already exists
             }
         }

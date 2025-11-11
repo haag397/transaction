@@ -1,21 +1,13 @@
 package ir.ipaam.transaction.application.service;
 
-import ir.ipaam.common.orchestration.QueryCommandFlowGateway;
 import ir.ipaam.transaction.api.write.dto.BatchDepositTransferRequestDTO;
 import ir.ipaam.transaction.api.write.dto.BatchDepositTransferResponseDTO;
 import ir.ipaam.transaction.application.command.BatchDepositTransferCommand;
-import ir.ipaam.transaction.integration.client.core.dto.CreditorDTO;
-import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferRequestDTO;
-import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferResponseDTO;
-import ir.ipaam.transaction.integration.client.core.service.CoreService;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.modelling.command.AggregateStreamCreationException;
 import org.springframework.stereotype.Service;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -27,59 +19,50 @@ import static ir.ipaam.transaction.utills.TransactionIdGenerator.generate;
 public class BatchDepositTransferService {
 
     private final CommandGateway commandGateway;
-    private final CoreService coreService;
-    private final QueryCommandFlowGateway flowGateway;
 
 
     public CompletableFuture<BatchDepositTransferResponseDTO> createBatchDepositTransfer(BatchDepositTransferRequestDTO request) {
         // Generate transaction ID
         String transactionId = generate();
 
-        // Call core service first to process the transfer
-//        CoreBatchDepositTransferRequestDTO coreRequest = CoreBatchDepositTransferRequestDTO.builder()
-//                .transactionId(transactionId)
-//                .documentItemType(request.getDocumentItemType())
-//                .sourceAccount(request.getSourceAccount())
-//                .branchCode(request.getBranchCode())
-//                .sourceAmount(request.getSourceAmount())
-//                .sourceComment(request.getSourceComment())
-//                .transferBillNumber(request.getTransferBillNumber())
-//                .creditors(request.getCreditors())
-//                .build();
-//
-//        CoreBatchDepositTransferResponseDTO coreResponse = coreService.batchDepositTransfer(coreRequest);
-//
-//        if (coreResponse == null) {
-//            throw new RuntimeException("Failed to process batch deposit transfer");
-//        }
+        // Prepare additional info map from request for the new command schema
+        Map<String, Object> extraInformation = new HashMap<>();
+        if (request.getDocumentItemType() != null) extraInformation.put("documentItemType", request.getDocumentItemType());
+        if (request.getBranchCode() != null) extraInformation.put("branchCode", request.getBranchCode());
+        if (request.getTransferBillNumber() != null) extraInformation.put("transferBillNumber", request.getTransferBillNumber());
+        if (request.getCreditors() != null) extraInformation.put("creditors", request.getCreditors());
 
-        // Create and send command to aggregate (always use our generated aggregate identifier)
-//        BatchDepositTransferCommand command = new BatchDepositTransferCommand(
-//                transactionId,
-//                request.getDocumentItemType(),
-//                request.getSourceAccount(),
-//                request.getBranchCode(),
-//                request.getSourceAmount(),
-//                request.getSourceComment(),
-//                request.getTransferBillNumber(),
-//                request.getCreditors(),
-//                coreResponse.getTransactionCode(),
-//                coreResponse.getTransactionDate()
-//        );
+        // Map request into the new command model
+        BatchDepositTransferCommand command = new BatchDepositTransferCommand(
+                transactionId,                         // transactionId
+                request.getSourceAccount(),            // source
+                null,                                  // sourceTitle (not provided)
+                null,                                  // destination (batch - not a single destination)
+                null,                                  // destinationTitle
+                request.getSourceAmount(),             // amount
+                request.getSourceComment(),            // description
+                null,                                  // sourceDescription
+                null,                                  // extraDescription
+                extraInformation,                      // extraInformation
+                "BATCH_DEPOSIT_TRANSFER",              // reason
+                null,                                  // transactionCode (set later by workflow/core)
+                null                                   // transactionDate (set later by workflow/core)
+        );
 
-//        try {
-//            commandGateway.sendAndWait(command);
-//        } catch (AggregateStreamCreationException duplicate) {
-            // Idempotent create: aggregate with this identifier already exists
+        try {
+            commandGateway.sendAndWait(command);
+        } catch (AggregateStreamCreationException duplicate) {
+            // Idempotent create: aggregate already exists
         }
 
-//        return BatchDepositTransferResponseDTO.builder()
-//                .transactionId(coreResponse.getTransactionId())
-//                .transactionDate(coreResponse.getTransactionDate())
-//                .transactionCode(coreResponse.getTransactionCode())
-//                .status("SUCCESS")
-//                .message("Batch deposit transfer initiated successfully")
-//                .build();
+        // Immediate ACK; detailed fields will be filled as the workflow progresses
+        BatchDepositTransferResponseDTO response = BatchDepositTransferResponseDTO.builder()
+                .transactionId(transactionId)
+                .status("REQUESTED")
+                .message("Batch deposit transfer requested")
+                .build();
+
+        return CompletableFuture.completedFuture(response);
     }
 }
 

@@ -9,6 +9,7 @@ import lombok.Value;
 import java.util.Map;
 
 @Value
+@Builder
 public class BatchDepositTransferedEvent {
     String transactionId;
     String source;

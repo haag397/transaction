@@ -53,7 +53,7 @@ public class PolTransferAggregate {
         this.paymentId = command.getPaymentId();
         this.effectiveDate = command.getEffectiveDate();
         this.referenceNumber = command.getReferenceNumber();
-        this.transactionStatus = TransactionResponseStatus.REQUESTED;
+        this.transactionStatus = TransactionResponseStatus.INPROGRESS;
 
         AggregateLifecycle.apply(PolTransferredEvent.builder()
                 .transactionId(this.transactionId)
@@ -70,7 +70,7 @@ public class PolTransferAggregate {
                 .paymentId(this.paymentId)
                 .effectiveDate(this.effectiveDate)
                 .referenceNumber(this.referenceNumber)
-                .transactionResponseStatus(TransactionResponseStatus.REQUESTED)
+                .transactionResponseStatus(TransactionResponseStatus.INPROGRESS)
                 .build());
     }
 

@@ -13,7 +13,5 @@ public class BatchDepositTransferResponseDTO {
     private String transactionId;
     private String transactionDate;
     private String transactionCode;
-    private String status;
-    private String message;
 }
 

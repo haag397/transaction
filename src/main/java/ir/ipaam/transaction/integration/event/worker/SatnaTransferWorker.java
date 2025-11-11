@@ -27,7 +27,9 @@ public class SatnaTransferWorker {
     public Map<String, Object> processSatnaTransfer(
             @Variable CoreSatnaTransferRequestDTO satnaTransferRequest) {
 
-        log.info("Processing SATNA transfer for transactionId: {}", satnaTransferRequest.getTransactionId());
+        if (satnaTransferRequest == null) {
+            throw new RuntimeException("SATNA transfer request is required");
+        }
 
         // Generate transactionId if not provided
         String transactionId = satnaTransferRequest.getTransactionId();
@@ -36,11 +38,19 @@ public class SatnaTransferWorker {
             satnaTransferRequest.setTransactionId(transactionId);
         }
 
+        log.info("Processing SATNA transfer for transactionId: {}", transactionId);
+
         // Call core service
         CoreSatnaTransferResponseDTO coreResponse = coreService.satnaTransfer(satnaTransferRequest);
 
         if (coreResponse == null) {
+            log.error("Core service returned null for transactionId: {}", transactionId);
             throw new RuntimeException("Failed to process SATNA transfer - core service returned null");
+        }
+
+        if (coreResponse.getTransactionId() == null || coreResponse.getTransactionId().isBlank()) {
+            log.error("Response transaction ID is null or blank for transactionId: {}", transactionId);
+            throw new RuntimeException("Failed to process SATNA transfer - invalid response");
         }
 
         // Create and send command to SATNA aggregate (always use our generated aggregate identifier)
@@ -76,10 +86,10 @@ public class SatnaTransferWorker {
 
         return Map.of(
                 "transactionId", coreResponse.getTransactionId(),
-                "transactionCode", coreResponse.getTransactionCode(),
-                "transactionDate", coreResponse.getTransactionDate(),
-                "userReferenceNumber", coreResponse.getUserReferenceNumber(),
-                "status", "SUCCESS"
+                "transactionCode", coreResponse.getTransactionCode() != null ? coreResponse.getTransactionCode() : "",
+                "transactionDate", coreResponse.getTransactionDate() != null ? coreResponse.getTransactionDate() : "",
+                "userReferenceNumber", coreResponse.getUserReferenceNumber() != null ? coreResponse.getUserReferenceNumber() : "",
+                "accepted", true
         );
     }
 }

@@ -2,8 +2,10 @@ package ir.ipaam.transaction.domain.aggregate;
 
 import ir.ipaam.transaction.application.command.BatchDepositTransferCommand;
 import ir.ipaam.transaction.application.command.TransactionInquiryCommand;
+import ir.ipaam.transaction.application.command.UpdateTransferStateCommand;
 import ir.ipaam.transaction.domain.event.BatchDepositTransferedEvent;
 import ir.ipaam.transaction.domain.event.TransactionInquiredEvent;
+import ir.ipaam.transaction.domain.event.TransactionStateUpdatedEvent;
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
 import ir.ipaam.transaction.domain.model.TransactionSubType;
 import ir.ipaam.transaction.domain.model.TransactionType;
@@ -42,22 +44,23 @@ public class BatchDepositTransferAggregate {
 
     @CommandHandler
     public BatchDepositTransferAggregate(BatchDepositTransferCommand command) {
-        BatchDepositTransferedEvent event = new BatchDepositTransferedEvent(
-                command.getTransactionId(),
-                command.getSource(),
-                command.getSourceTitle(),
-                command.getDestination(),
-                command.getDestinationTitle(),
-                command.getAmount(),
-                command.getDescription(),
-                command.getSourceDescription(),
-                command.getExtraDescription(),
-                command.getExtraInformation(),
-                command.getReason(),
-                command.getTransactionCode(),
-                command.getTransactionDate(),
-                TransactionResponseStatus.REQUESTED
-        );
+        BatchDepositTransferedEvent event = BatchDepositTransferedEvent.builder()
+                .transactionId(command.getTransactionId())
+                .source(command.getSource())
+                .sourceTitle(command.getSourceTitle())
+                .destination(command.getDestination())
+                .destinationTitle(command.getDestinationTitle())
+                .amount(command.getAmount())
+                .description(command.getDescription())
+                .sourceDescription(command.getSourceDescription())
+                .extraDescription(command.getExtraDescription())
+                .extraInformation(command.getExtraInformation())
+                .reason(command.getReason())
+                .transactionCode(command.getTransactionCode())
+                .transactionDate(command.getTransactionDate())
+                .status(TransactionResponseStatus.INPROGRESS)
+                .build();
+
         apply(event);
     }
 
@@ -86,7 +89,7 @@ public class BatchDepositTransferAggregate {
         AggregateLifecycle.apply(new TransactionInquiredEvent(
                 this.transactionDate,
                 this.transactionCode,
-                TransactionResponseStatus.TRANSACTION_INQUIRY
+                TransactionResponseStatus.INPROGRESS
         ));
     }
 
@@ -95,5 +98,18 @@ public class BatchDepositTransferAggregate {
         this.status = event.getTransactionStatus();
         this.transactionCode = event.getTransactionCode();
         this.transactionDate = event.getTransactionDate();
+    }
+
+    @CommandHandler
+    public void handle(UpdateTransferStateCommand command) {
+        AggregateLifecycle.apply(new TransactionStateUpdatedEvent(
+                command.getTransactionId(),
+                command.getTransactionResponseStatus()
+        ));
+    }
+
+    @EventSourcingHandler
+    public void on(TransactionStateUpdatedEvent event) {
+        this.status = event.getTransactionResponseStatus();
     }
 }

@@ -16,8 +16,8 @@ import java.util.Map;
 @Component
 @AllArgsConstructor
 public class DepositTransferWorker {
-
     private final CommandGateway commandGateway;
+
     private final CoreService coreService;
 
     @JobWorker(type = "deposit_transfer")
@@ -25,21 +25,14 @@ public class DepositTransferWorker {
             @Variable CoreBatchDepositTransferRequestDTO coreBatchDepositTransferRequestDTO
     ) {
         CoreBatchDepositTransferResponseDTO response = coreService.batchDepositTransfer(coreBatchDepositTransferRequestDTO);
-//        commandGateway.sendAndWait(
-//                BatchDepositTransferedEvent.builder()
-//                        .transactionId(response.getTransactionId())
-//                        .transactionDate(response.getTransactionDate())
-//                        .transactionCode(response.getTransactionCode())
-//                        .transactionResponseStatus(TransactionResponseStatus.CALL_CORE).build()
-//        );
         commandGateway.sendAndWait(
-                new BatchDepositTransferedEvent(
-                        response.getTransactionId(),
-                        response.getTransactionDate(),
-                        response.getTransactionCode(),
-                        TransactionResponseStatus.CALL_CORE
-                        )
+                BatchDepositTransferedEvent.builder()
+                        .transactionId(response.getTransactionId())
+                        .transactionDate(response.getTransactionDate())
+                        .transactionCode(response.getTransactionCode())
+                        .status(TransactionResponseStatus.CALL_CORE).build()
         );
+
         return Map.of(
                 "transactionId", response.getTransactionId(),
                 "transactionDate", response.getTransactionDate(),

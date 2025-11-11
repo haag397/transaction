@@ -24,7 +24,7 @@ public class UpdateTransferStatusToDBWorker {
             throw new RuntimeException("Transaction ID is required");
         }
 
-        TransactionResponseStatus transactionResponseStatus  = TransactionResponseStatus.UPDATED;
+        TransactionResponseStatus transactionResponseStatus  = TransactionResponseStatus.INPROGRESS;
 
         UpdateTransferStateCommand command = new UpdateTransferStateCommand(
                 transactionId,
