@@ -44,41 +44,6 @@ public class BatchDepositTransferService {
             throw new RuntimeException("Failed to process batch deposit transfer - core service returned null");
         }
 
-        // Extract transaction data - try direct fields first, then nested data structure
-        String responseTransactionId = null;
-        String responseTransactionDate = null;
-        String responseTransactionCode = null;
-
-//        if (coreResponse.getResult() != null) {
-//            // Try direct fields first (actual response structure)
-//            responseTransactionId = coreResponse.getResult().getTransactionId();
-//            responseTransactionCode = coreResponse.getResult().getTransactionCode();
-//
-//            // Try nested data structure (mock/alternative response structure)
-//            if (coreResponse.getResult().getData() != null) {
-//                CoreBatchDepositTransferResponseDTO.Data data = coreResponse.getResult().getData();
-//                // Use data fields if direct fields are null, or for transactionDate
-//                if (responseTransactionId == null) {
-//                    responseTransactionId = data.getTransactionId();
-//                }
-//                if (responseTransactionCode == null) {
-//                    responseTransactionCode = data.getTransactionCode();
-//                }
-//                // transactionDate is only in nested data structure
-//                responseTransactionDate = data.getTransactionDate();
-//            }
-//        }
-
-        // Fallback to meta transactionId if still null
-        if (responseTransactionId == null && coreResponse.getMeta() != null) {
-            responseTransactionId = coreResponse.getMeta().getTransactionId();
-        }
-
-        // Use response transactionId if available, otherwise use generated one
-        String finalTransactionId = responseTransactionId != null && !responseTransactionId.isBlank() 
-                ? responseTransactionId 
-                : transactionId;
-
         Map<String, Object> extraInformation = new HashMap<>();
         if (request.getDocumentItemType() != null) extraInformation.put("documentItemType", request.getDocumentItemType());
         if (request.getBranchCode() != null) extraInformation.put("branchCode", request.getBranchCode());
@@ -97,8 +62,8 @@ public class BatchDepositTransferService {
                 null,                                  // extraDescription
                 extraInformation,                      // extraInformation
                 null,                                  // reason
-                responseTransactionCode,               // transactionCode (from core response)
-                responseTransactionDate                // transactionDate (from core response)
+                coreResponse.getResult().getData().getTransactionId(),               // transactionCode (from core response)
+                coreResponse.getResult().getData().getTransactionDate()                // transactionDate (from core response)
         );
 
         commandGateway.sendAndWait(command);
@@ -106,8 +71,8 @@ public class BatchDepositTransferService {
         // Map core response to API response DTO
         BatchDepositTransferResponseDTO response = BatchDepositTransferResponseDTO.builder()
                 .transactionId(transactionId)
-                .transactionDate(responseTransactionDate)
-                .transactionCode(responseTransactionCode)
+                .transactionDate(coreResponse.getResult().getData().getTransactionDate())
+                .transactionCode(coreResponse.getResult().getData().getTransactionId())
                 .build();
 
         return CompletableFuture.completedFuture(response);
