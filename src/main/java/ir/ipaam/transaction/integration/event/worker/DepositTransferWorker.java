@@ -27,16 +27,16 @@ public class DepositTransferWorker {
         CoreBatchDepositTransferResponseDTO response = coreService.batchDepositTransfer(coreBatchDepositTransferRequestDTO);
         commandGateway.sendAndWait(
                 BatchDepositTransferedEvent.builder()
-                        .transactionId(response.getTransactionId())
-                        .transactionDate(response.getTransactionDate())
-                        .transactionCode(response.getTransactionCode())
-                        .status(TransactionResponseStatus.CALL_CORE).build()
+                        .transactionId(response.getResult().getData().getTransactionId())
+                        .transactionDate(response.getResult().getData().getTransactionDate())
+                        .transactionCode(response.getResult().getData().getTransactionCode())
+                        .build()
         );
 
         return Map.of(
-                "transactionId", response.getTransactionId(),
-                "transactionDate", response.getTransactionDate(),
-                "transactionCode", response.getTransactionCode()
+                "transactionId", response.getResult().getData().getTransactionId(),
+                "transactionDate", response.getResult().getData().getTransactionDate(),
+                "transactionCode", response.getResult().getData().getTransactionCode()
         );
     }
 }

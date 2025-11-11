@@ -32,9 +32,6 @@ public class BatchDepositTransferRequestDTO {
     
     private String sourceComment;
 
-//    @NotBlank(message = "Transfer bill number is required")
-    private String transferBillNumber;
-    
 //    @NotEmpty(message = "Creditors list cannot be empty")
     private List<CreditorDTO> creditors;
 }

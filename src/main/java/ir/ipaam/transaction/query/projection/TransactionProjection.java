@@ -43,7 +43,7 @@ public class TransactionProjection {
                 .description(event.getDescription())
                 .reason(event.getReason())
                 .destinationTitle(event.getDestinationTitle())
-                .status(Optional.ofNullable(event.getStatus()).orElse(TransactionResponseStatus.INPROGRESS))
+//                .status(Optional.ofNullable(event.getStatus()).orElse(TransactionResponseStatus.INPROGRESS))
                 .build();
 
         transactionRepository.save(tx);
