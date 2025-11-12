@@ -36,5 +36,9 @@ public class BatchDepositTransferRequestDTO {
 
 //    @NotEmpty(message = "Creditors list cannot be empty")
     private List<CreditorDTO> creditors;
+    
+    // Transaction type: "deposit-to-deposit", "pol", "satna", "paya"
+    // Defaults to "deposit-to-deposit" for batch deposit transfers
+    private String type;
 }
 

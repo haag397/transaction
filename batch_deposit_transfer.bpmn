@@ -101,10 +101,10 @@
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=type=pol</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0lu6vox" sourceRef="Gateway_1r7y2yq" targetRef="satna_transfer">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=type=paya</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=type=satna</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_19mfelo" sourceRef="Gateway_1r7y2yq" targetRef="paya_transfer">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=type=satna</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=type=paya</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0wf6o25" sourceRef="Event_0rk46y9" targetRef="transaction_inquiry" />
     <bpmn:sequenceFlow id="Flow_177g1n9" sourceRef="Event_1new3f6" targetRef="transaction_inquiry" />

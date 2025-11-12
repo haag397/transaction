@@ -14,8 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static ir.ipaam.transaction.utills.TransactionIdGenerator.generate;
-
 @Component
 @AllArgsConstructor
 public class SaveTransferRequestToDBWorker {
@@ -25,32 +23,73 @@ public class SaveTransferRequestToDBWorker {
     @JobWorker(type = "save_to_db")
     public Map<String, Object> saveTransferRequestToDB(
             @Variable CoreBatchDepositTransferRequestDTO coreBatchDepositTransferRequestDTO,
-            @Variable(name = "transactionId") String transactionIdVar) {
+            @Variable(name = "transactionId") String transactionId) {
 
-            List<CreditorDTO> creditors = coreBatchDepositTransferRequestDTO.getCreditors();
-            String destination = null;
-            String destinationTitle = null;
+        // Validate required parameters
+        if (coreBatchDepositTransferRequestDTO == null) {
+            throw new IllegalArgumentException("coreBatchDepositTransferRequestDTO cannot be null");
+        }
+        if (transactionId == null || transactionId.isBlank()) {
+            throw new IllegalArgumentException("transactionId cannot be null or empty");
+        }
 
+        // Extract values from first creditor if available
+        List<CreditorDTO> creditors = coreBatchDepositTransferRequestDTO.getCreditors();
+        String destination = null;
+        String destinationTitle = null;
+        String extraDescription = null;
+
+        if (creditors != null && !creditors.isEmpty()) {
             CreditorDTO firstCreditor = creditors.get(0);
             destination = firstCreditor.getDestinationAccount();
             destinationTitle = firstCreditor.getDestinationComment();
+            
+            // Aggregate destination comments from all creditors for extraDescription
+            if (creditors.size() > 1) {
+                extraDescription = creditors.stream()
+                        .map(CreditorDTO::getDestinationComment)
+                        .filter(comment -> comment != null && !comment.isEmpty())
+                        .reduce((c1, c2) -> c1 + "; " + c2)
+                        .orElse(null);
+            } else {
+                extraDescription = firstCreditor.getDestinationComment();
+            }
+        }
 
+        // Prepare extraInformation map from DTO fields
+        Map<String, Object> extraInformation = new HashMap<>();
+        if (coreBatchDepositTransferRequestDTO.getDocumentItemType() != null) {
+            extraInformation.put("documentItemType", coreBatchDepositTransferRequestDTO.getDocumentItemType());
+        }
+        if (coreBatchDepositTransferRequestDTO.getBranchCode() != null) {
+            extraInformation.put("branchCode", coreBatchDepositTransferRequestDTO.getBranchCode());
+        }
+        if (coreBatchDepositTransferRequestDTO.getTransferBillNumber() != null) {
+            extraInformation.put("transferBillNumber", coreBatchDepositTransferRequestDTO.getTransferBillNumber());
+        }
+        if (creditors != null) {
+            extraInformation.put("creditors", creditors);
+        }
 
-            BatchDepositTransferCommand command = BatchDepositTransferCommand.builder()
-                    .transactionId(transactionIdVar)
-                    .source(coreBatchDepositTransferRequestDTO.getSourceAccount())
-                    .destination(destination)
-                    .destinationTitle(destinationTitle)
-                    .amount(coreBatchDepositTransferRequestDTO.getSourceAmount())
-                    .description(coreBatchDepositTransferRequestDTO.getSourceComment())
-//                    .extraDescription(extraDescription)
-//                    .extraInformation(extraInformation)
-                    .build();
+        BatchDepositTransferCommand command = BatchDepositTransferCommand.builder()
+                .transactionId(transactionId)
+                .source(coreBatchDepositTransferRequestDTO.getSourceAccount())
+                .destination(destination)
+                .destinationTitle(destinationTitle)
+                .amount(coreBatchDepositTransferRequestDTO.getSourceAmount())
+                .description(coreBatchDepositTransferRequestDTO.getSourceComment())
+                .extraDescription(extraDescription)
+                .extraInformation(extraInformation)
+                .build();
 
-                commandGateway.sendAndWait(command);
+        try {
+            commandGateway.sendAndWait(command);
+        } catch (AggregateStreamCreationException duplicate) {
+            // Idempotent create: aggregate already exists
+        }
 
         return Map.of(
-                "transactionId", transactionIdVar,
+                "transactionId", transactionId,
                 "status", "REQUESTED"
         );
     }

@@ -9,7 +9,6 @@ import ir.ipaam.transaction.integration.client.core.service.CoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;
-import org.axonframework.modelling.command.AggregateStreamCreationException;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -44,11 +43,29 @@ public class BatchDepositTransferService {
             throw new RuntimeException("Failed to process batch deposit transfer - core service returned null");
         }
 
+        // Prepare extraInformation map from request fields
+        Map<String, Object> extraInformation = new HashMap<>();
+        if (request.getDocumentItemType() != null) {
+            extraInformation.put("documentItemType", request.getDocumentItemType());
+        }
+        if (request.getBranchCode() != null) {
+            extraInformation.put("branchCode", request.getBranchCode());
+        }
+        if (request.getCreditors() != null) {
+            extraInformation.put("creditors", request.getCreditors());
+        }
+        // Set transaction type (default to "deposit-to-deposit" for batch deposit transfers)
+        String transactionType = request.getType() != null && !request.getType().isBlank() 
+                ? request.getType() 
+                : "deposit-to-deposit";
+        extraInformation.put("type", transactionType);
+
         BatchDepositTransferCommand command = BatchDepositTransferCommand.builder()
                 .transactionId(transactionId)
                 .source(request.getSourceAccount())
                 .amount(request.getSourceAmount())
                 .description(request.getSourceComment())
+                .extraInformation(extraInformation)
                 .transactionCode(coreResponse.getResult().getData().getTransactionId())
                 .transactionDate(coreResponse.getResult().getData().getTransactionDate())
                 .build();
