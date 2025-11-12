@@ -7,6 +7,5 @@ import lombok.Value;
 public class TransactionInquiredEvent {
     String transactionDate;
     String transactionCode;
-//    Integer rsCode;
     TransactionResponseStatus transactionStatus;
 }

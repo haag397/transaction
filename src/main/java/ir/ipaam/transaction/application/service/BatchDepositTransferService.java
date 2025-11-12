@@ -41,7 +41,7 @@ public class BatchDepositTransferService {
         CoreBatchDepositTransferResponseDTO coreResponse = coreService.batchDepositTransfer(coreRequest);
 
         if (coreResponse == null) {
-            throw new RuntimeException("Failed to process batch deposit transfer - core service returned null");
+            throw new RuntimeException("خطا در برقرای سرویس");
         }
 
         Map<String, Object> extraInformation = new HashMap<>();
@@ -49,26 +49,18 @@ public class BatchDepositTransferService {
         if (request.getBranchCode() != null) extraInformation.put("branchCode", request.getBranchCode());
         if (request.getCreditors() != null) extraInformation.put("creditors", request.getCreditors());
 
-        // Map request into the new command model
-        BatchDepositTransferCommand command = new BatchDepositTransferCommand(
-                transactionId,                    // transactionId (use from core response if available)
-                request.getSourceAccount(),            // source
-                null,                                  // sourceTitle (not provided)
-                null,                                  // destination (batch - not a single destination)
-                null,                                  // destinationTitle
-                request.getSourceAmount(),             // amount
-                request.getSourceComment(),            // description
-                null,                                  // sourceDescription
-                null,                                  // extraDescription
-                extraInformation,                      // extraInformation
-                null,                                  // reason
-                coreResponse.getResult().getData().getTransactionId(),               // transactionCode (from core response)
-                coreResponse.getResult().getData().getTransactionDate()                // transactionDate (from core response)
-        );
+        BatchDepositTransferCommand command = BatchDepositTransferCommand.builder()
+                .transactionId(transactionId)
+                .source(request.getSourceAccount())
+                .amount(request.getSourceAmount())
+                .description(request.getSourceComment())
+                .extraInformation(extraInformation)
+                .transactionCode(coreResponse.getResult().getData().getTransactionId())
+                .transactionDate(coreResponse.getResult().getData().getTransactionDate())
+                .build();
 
         commandGateway.sendAndWait(command);
 
-        // Map core response to API response DTO
         BatchDepositTransferResponseDTO response = BatchDepositTransferResponseDTO.builder()
                 .transactionId(transactionId)
                 .transactionDate(coreResponse.getResult().getData().getTransactionDate())

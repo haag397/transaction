@@ -24,7 +24,7 @@ public class BatchDepositTransferedEvent {
     String reason;
     String transactionCode;
     String transactionDate;
-//    TransactionResponseStatus status;
+    TransactionResponseStatus status;
 //    TransactionType type;
 //    TransactionSubType subType;
 }

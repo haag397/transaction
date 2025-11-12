@@ -76,21 +76,16 @@ public class SaveTransferRequestToDBWorker {
             }
 
             // Map DTO to new command structure
-            BatchDepositTransferCommand command = new BatchDepositTransferCommand(
-                    transactionId,                                          // transactionId
-                    coreBatchDepositTransferRequestDTO.getSourceAccount(),  // source
-                    null,                                                   // sourceTitle (not provided)
-                    destination,                                            // destination (from first creditor)
-                    destinationTitle,                                       // destinationTitle (from first creditor)
-                    coreBatchDepositTransferRequestDTO.getSourceAmount(),  // amount
-                    coreBatchDepositTransferRequestDTO.getSourceComment(),  // description
-                    null,                                                   // sourceDescription
-                    extraDescription,                                       // extraDescription (from creditors)
-                    extraInformation,                                       // extraInformation
-                    null,                                                   // reason
-                    null,                                                   // transactionCode (set later by workflow/core)
-                    null                                                    // transactionDate (set later by workflow/core)
-            );
+            BatchDepositTransferCommand command = BatchDepositTransferCommand.builder()
+                    .transactionId(transactionId)
+                    .source(coreBatchDepositTransferRequestDTO.getSourceAccount())
+                    .destination(destination)
+                    .destinationTitle(destinationTitle)
+                    .amount(coreBatchDepositTransferRequestDTO.getSourceAmount())
+                    .description(coreBatchDepositTransferRequestDTO.getSourceComment())
+                    .extraDescription(extraDescription)
+                    .extraInformation(extraInformation)
+                    .build();
 
             try {
                 commandGateway.sendAndWait(command);

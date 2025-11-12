@@ -25,22 +25,56 @@ public class Transaction {
     @Id
     @Column(name = "id", updatable = false, nullable = false, unique = true)
     private UUID id;
+
+    @Column(name = "transaction_id")
     private String transactionId;
+
+    @Column(name = "source")
     private String source; //source deposit card paya:sheba number deposit number
+
+    @Column(name = "source_title")
     private String sourceTitle;
+
+    @Column(name = "destination")
     private String destination;//dest deposit card paya:sheba number deposit number
+
+    @Column(name = "destination_title")
     private String destinationTitle;//receiver name
+
+    @Column(name = "amount")
     private Long amount;
+
+    @Column(name = "description")
     private String description;
+
+    @Column(name = "source_description")
     private String sourceDescription;
+
+    @Column(name = "extra_description")
     private String extraDescription;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private Map<String, Object> extraInformation;
+
+    @Column(name = "reason")
     private String reason; //reason
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private TransactionResponseStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
     private TransactionType type; //paya satna pol card to cart account_transfer
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sub_type")
     private TransactionSubType subType; // category of transaction like safte charge
+
+    @Column(name = "transaction_date")
     private LocalDateTime transactionDate;
+
+    @Column(name = "transaction_code")
     private String transactionCode;
 }

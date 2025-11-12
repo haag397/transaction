@@ -43,7 +43,7 @@ public class TransactionProjection {
                 .description(event.getDescription())
                 .reason(event.getReason())
                 .destinationTitle(event.getDestinationTitle())
-//                .status(Optional.ofNullable(event.getStatus()).orElse(TransactionResponseStatus.INPROGRESS))
+                .status(event.getStatus()) // Save null for successful transfers, enum value for failures
                 .build();
 
         transactionRepository.save(tx);

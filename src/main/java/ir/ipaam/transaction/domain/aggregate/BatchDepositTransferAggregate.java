@@ -58,7 +58,7 @@ public class BatchDepositTransferAggregate {
                 .reason(command.getReason())
                 .transactionCode(command.getTransactionCode())
                 .transactionDate(command.getTransactionDate())
-//                .status(TransactionResponseStatus.INPROGRESS)
+                .status(TransactionResponseStatus.SUCCESS) // Set SUCCESS status for successful transfers
                 .build();
 
         apply(event);
@@ -80,7 +80,7 @@ public class BatchDepositTransferAggregate {
         this.reason = event.getReason();
         this.transactionCode = event.getTransactionCode();
         this.transactionDate = event.getTransactionDate();
-//        this.status = event.getStatus();
+        this.status = event.getStatus();
 
     }
 
