@@ -17,6 +17,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class BatchDepositTransferRequestDTO {
+
+    private String transactionId;
 //    @NotBlank(message = "Document item type is required")
     private String documentItemType;
     

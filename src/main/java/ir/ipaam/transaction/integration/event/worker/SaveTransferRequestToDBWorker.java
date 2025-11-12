@@ -25,77 +25,32 @@ public class SaveTransferRequestToDBWorker {
     @JobWorker(type = "save_to_db")
     public Map<String, Object> saveTransferRequestToDB(
             @Variable CoreBatchDepositTransferRequestDTO coreBatchDepositTransferRequestDTO,
-            @Variable(name = "transactionId") String txIdVar) {
+            @Variable(name = "transactionId") String transactionIdVar) {
 
-        // Resolve or generate transactionId safely
-        String transactionId = txIdVar;
-        if (coreBatchDepositTransferRequestDTO != null && coreBatchDepositTransferRequestDTO.getTransactionId() != null && !coreBatchDepositTransferRequestDTO.getTransactionId().isEmpty()) {
-            transactionId = coreBatchDepositTransferRequestDTO.getTransactionId();
-        }
-        if (transactionId == null || transactionId.isEmpty()) {
-            transactionId = generate();
-        }
-
-        // If DTO is missing, skip aggregate creation (task may be invoked from a generic flow)
-        if (coreBatchDepositTransferRequestDTO != null) {
-            // Prepare extraInformation map from DTO fields
-            Map<String, Object> extraInformation = new HashMap<>();
-            if (coreBatchDepositTransferRequestDTO.getDocumentItemType() != null) {
-                extraInformation.put("documentItemType", coreBatchDepositTransferRequestDTO.getDocumentItemType());
-            }
-            if (coreBatchDepositTransferRequestDTO.getBranchCode() != null) {
-                extraInformation.put("branchCode", coreBatchDepositTransferRequestDTO.getBranchCode());
-            }
-            if (coreBatchDepositTransferRequestDTO.getTransferBillNumber() != null) {
-                extraInformation.put("transferBillNumber", coreBatchDepositTransferRequestDTO.getTransferBillNumber());
-            }
-            if (coreBatchDepositTransferRequestDTO.getCreditors() != null) {
-                extraInformation.put("creditors", coreBatchDepositTransferRequestDTO.getCreditors());
-            }
-
-            // Extract values from first creditor if available
             List<CreditorDTO> creditors = coreBatchDepositTransferRequestDTO.getCreditors();
             String destination = null;
             String destinationTitle = null;
-            String extraDescription = null;
-            
-            if (creditors != null && !creditors.isEmpty()) {
-                CreditorDTO firstCreditor = creditors.get(0);
-                destination = firstCreditor.getDestinationAccount();
-                destinationTitle = firstCreditor.getDestinationComment();
-                // Aggregate destination comments from all creditors for extraDescription
-                if (creditors.size() > 1) {
-                    extraDescription = creditors.stream()
-                            .map(CreditorDTO::getDestinationComment)
-                            .filter(comment -> comment != null && !comment.isEmpty())
-                            .reduce((c1, c2) -> c1 + "; " + c2)
-                            .orElse(null);
-                } else {
-                    extraDescription = firstCreditor.getDestinationComment();
-                }
-            }
 
-            // Map DTO to new command structure
+            CreditorDTO firstCreditor = creditors.get(0);
+            destination = firstCreditor.getDestinationAccount();
+            destinationTitle = firstCreditor.getDestinationComment();
+
+
             BatchDepositTransferCommand command = BatchDepositTransferCommand.builder()
-                    .transactionId(transactionId)
+                    .transactionId(transactionIdVar)
                     .source(coreBatchDepositTransferRequestDTO.getSourceAccount())
                     .destination(destination)
                     .destinationTitle(destinationTitle)
                     .amount(coreBatchDepositTransferRequestDTO.getSourceAmount())
                     .description(coreBatchDepositTransferRequestDTO.getSourceComment())
-                    .extraDescription(extraDescription)
-                    .extraInformation(extraInformation)
+//                    .extraDescription(extraDescription)
+//                    .extraInformation(extraInformation)
                     .build();
 
-            try {
                 commandGateway.sendAndWait(command);
-            } catch (AggregateStreamCreationException duplicate) {
-                // Idempotent create: aggregate already exists
-            }
-        }
 
         return Map.of(
-                "transactionId", transactionId,
+                "transactionId", transactionIdVar,
                 "status", "REQUESTED"
         );
     }
