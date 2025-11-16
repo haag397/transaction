@@ -1,6 +1,5 @@
 package ir.ipaam.transaction.integration.client.core.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-    public class CoreBatchDepositTransferResponseDTO {
+public class CoreBatchDepositTransferResponseDTO {
 
     private Result result;
     private Status status;

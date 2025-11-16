@@ -53,19 +53,9 @@ axon:
     enabled: false
   eventhandling:
     processors:
-      deposit-projections:
+      transaction-command:
         mode: subscribing
-        source: eventBus
-      depositType-projection:
-        mode: subscribing
-        source: eventBus
-      deposit-opening-integration:
-        mode: subscribing
-        source: eventBus
-      transaction-bpmn-integration:
-        mode: subscribing
-        source: eventBus
-      transaction-projections:
+      transaction-projection:
         mode: subscribing
         source: eventBus
 #        mode: tracking

@@ -5,6 +5,4 @@ public enum TransactionType {
     SATNA,
     POL,
     ACCOUNT_TRANSFER,
-    CARD,
-    WALLET
 }

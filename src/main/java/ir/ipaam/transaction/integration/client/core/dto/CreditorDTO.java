@@ -7,7 +7,6 @@ public class CreditorDTO {
     private String destinationAccount;
     private String documentItemType;
     private String branchCode;
-    private String personnelCode;
     private Long destinationAmount;
     private String destinationComment;
 }

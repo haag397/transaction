@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "\"Transaction\"")
+@Table(name = "\"transaction\"")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -77,4 +77,10 @@ public class Transaction {
 
     @Column(name = "transaction_code")
     private String transactionCode;
+
+    @Column(name = "ref_number")
+    private String refNumber;
+
+    @Column(name = "error_message")
+    private String errorMessage;
 }

@@ -4,8 +4,10 @@ import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
 import lombok.Value;
 
 @Value
-public class TransactionInquiredEvent {
-    String transactionDate;
+public class BatchDepositTransferInquiredEvent {
+    String transactionId;
     String transactionCode;
-    TransactionResponseStatus transactionStatus;
+    String transactionDate;
+    TransactionResponseStatus status;
+    String refNumber;
 }

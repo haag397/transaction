@@ -1,15 +1,14 @@
-package ir.ipaam.transaction.application.command;
+package ir.ipaam.transaction.domain.event;
 
-import lombok.Builder;
-import lombok.Value;
-import org.axonframework.modelling.command.TargetAggregateIdentifier;
+import lombok.*;
 
 import java.util.Map;
 
-@Value
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class BatchDepositTransferCommand {
-    @TargetAggregateIdentifier
+public class BatchDepositTransferRequestedEvent {
     String transactionId;
     String source;
     String sourceTitle;

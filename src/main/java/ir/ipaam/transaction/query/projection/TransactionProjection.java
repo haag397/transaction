@@ -1,9 +1,6 @@
 package ir.ipaam.transaction.query.projection;
 
-import ir.ipaam.transaction.domain.event.BatchDepositTransferedEvent;
-import ir.ipaam.transaction.domain.event.PolTransferredEvent;
-import ir.ipaam.transaction.domain.event.SatnaTransferredEvent;
-import ir.ipaam.transaction.domain.event.TransactionStateUpdatedEvent;
+import ir.ipaam.transaction.domain.event.*;
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
 import ir.ipaam.transaction.domain.model.TransactionType;
 import ir.ipaam.transaction.query.model.Transaction;
@@ -14,99 +11,95 @@ import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
+import java.time.LocalTime;
 import java.util.UUID;
 
 @Component
-@ProcessingGroup("transaction-projections")
 @RequiredArgsConstructor
-@Slf4j
+@ProcessingGroup("transaction-projection")
 public class TransactionProjection {
 
-    private final TransactionRepository transactionRepository;
+    private final TransactionRepository repository;
 
-    @EventHandler
-    public void on(BatchDepositTransferedEvent event) {
+    private LocalDateTime parseTransactionDate(String date) {
 
-        LocalDateTime when = parseIsoDate(event.getTransactionDate());
-
-        Transaction tx = Transaction.builder()
-                .id(UUID.randomUUID())
-                .transactionId(event.getTransactionId())
-                .transactionCode(event.getTransactionCode())
-                .transactionDate(when)
-                .amount(event.getAmount())
-                .type(TransactionType.ACCOUNT_TRANSFER)
-                .description(event.getDescription())
-                .reason(event.getReason())
-                .destinationTitle(event.getDestinationTitle())
-                .status(event.getStatus()) // Save null for successful transfers, enum value for failures
-                .build();
-
-        transactionRepository.save(tx);
-    }
-
-    @EventHandler
-    public void on(SatnaTransferredEvent event) {
-
-        LocalDateTime when = parseIsoDate(event.getTransactionDate());
-        String title = String.format("%s %s",
-                event.getReceiverName() != null ? event.getReceiverName() : "",
-                event.getReceiverLastName() != null ? event.getReceiverLastName() : "").trim();
-
-        Transaction tx = Transaction.builder()
-                .id(UUID.randomUUID())
-                .transactionId(event.getTransactionId())
-                .transactionCode(event.getTransactionCode())
-                .transactionDate(when)
-                .amount(event.getAmount())
-                .destinationTitle(title.isEmpty() ? null : title)
-                .type(TransactionType.SATNA)
-                .status(Optional.ofNullable(event.getTransactionResponseStatus()).orElse(TransactionResponseStatus.INPROGRESS))
-                .build();
-
-        transactionRepository.save(tx);
-    }
-
-    @EventHandler
-    public void on(PolTransferredEvent event) {
-
-        // POL events currently do not carry ISO date/time; omit when for now
-        Transaction tx = Transaction.builder()
-                .id(UUID.randomUUID())
-                .transactionId(event.getTransactionId())
-                .amount(event.getAmount())
-                .destination(event.getDestIban())
-                .destinationTitle(event.getCreditorFullName())
-                .type(TransactionType.POL)
-                .status(Optional.ofNullable(event.getTransactionResponseStatus()).orElse(TransactionResponseStatus.INPROGRESS))
-                .build();
-
-        transactionRepository.save(tx);
-    }
-
-    @EventHandler
-    public void on(TransactionStateUpdatedEvent event) {
-
-        transactionRepository.findByTransactionId(event.getTransactionId())
-                .ifPresent(tx -> {
-                    tx.setStatus(event.getTransactionResponseStatus());
-                    transactionRepository.save(tx);
-                });
-    }
-
-    private LocalDateTime parseIsoDate(String iso) {
-        if (iso == null) {
-            return LocalDateTime.now();
+        if (date == null || date.isBlank()) {
+            return null;
         }
+
+        // Case 1: Try parsing ISO date (Inquiry API)
         try {
-            return ZonedDateTime.parse(iso, DateTimeFormatter.ISO_DATE_TIME).toLocalDateTime();
-        } catch (Exception e) {
-            return LocalDateTime.now();
+            return LocalDateTime.parse(date);
+        } catch (Exception ignore) {}
+
+        // Case 2: Persian date format (Transfer API: "1404/02/27 - 10:43:29")
+        if (date.contains("/") && date.contains("-")) {
+            // We cannot convert Shamsi → Gregorian here (no library)
+            // So return null (or change your entity to String)
+            return null;
         }
+
+        // Unknown format
+        return null;
+    }
+
+    @EventHandler
+    public void on(BatchDepositTransferRequestedEvent e) {
+
+        Transaction tx = Transaction.builder()
+                .id(UUID.randomUUID())
+                .transactionId(e.getTransactionId())
+                .source(e.getSource())
+                .sourceTitle(e.getSourceTitle())
+                .destination(e.getDestination())
+                .destinationTitle(e.getDestinationTitle())
+                .amount(e.getAmount())
+                .description(e.getDescription())
+                .sourceDescription(e.getSourceDescription())
+                .extraDescription(e.getExtraDescription())
+                .extraInformation(e.getExtraInformation())
+                .status(TransactionResponseStatus.INPROGRESS)
+                .build();
+
+        repository.save(tx);
+    }
+
+    @EventHandler
+    public void on(BatchDepositTransferSucceededEvent e) {
+
+        repository.findByTransactionId(e.getTransactionId()).ifPresent(tx -> {
+            tx.setTransactionCode(e.getTransactionCode());
+            tx.setTransactionDate(parseTransactionDate(e.getTransactionDate()));
+//            tx.setTransactionDate(e.getTransactionDate());
+            tx.setStatus(TransactionResponseStatus.SUCCESS);
+            repository.save(tx);
+        });
+    }
+
+    @EventHandler
+    public void on(BatchDepositTransferFailedEvent e) {
+
+        repository.findByTransactionId(e.getTransactionId()).ifPresent(tx -> {
+            tx.setStatus(TransactionResponseStatus.UNSUCCESS);
+            tx.setErrorMessage(e.getErrorMessage());
+            repository.save(tx);
+        });
+    }
+
+    @EventHandler
+    public void on(BatchDepositTransferInquiredEvent e) {
+
+        repository.findByTransactionId(e.getTransactionId()).ifPresent(tx -> {
+
+            tx.setTransactionCode(e.getTransactionCode());
+            tx.setTransactionDate(parseTransactionDate(e.getTransactionDate()));
+            tx.setStatus(e.getStatus());
+            tx.setRefNumber(e.getRefNumber());
+
+            repository.save(tx);
+        });
     }
 }
 

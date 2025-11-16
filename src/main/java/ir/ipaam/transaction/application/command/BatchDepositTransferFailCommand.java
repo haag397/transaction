@@ -1,14 +1,12 @@
 package ir.ipaam.transaction.application.command;
 
-import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
 import lombok.Value;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
 @Value
-public class UpdateTransferStateCommand {
+public class BatchDepositTransferFailCommand {
+
     @TargetAggregateIdentifier
     String transactionId;
-    TransactionResponseStatus transactionResponseStatus;
+    String errorMessage;
 }
-
-

@@ -10,7 +10,46 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class CoreTransactionInquiryResponseDTO {
-    String transactionCode;
-    String transactionDate;
-    String transactionStatus;
+
+    private Result result;
+    private Status status;
+    private Meta meta;
+
+    @lombok.Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Result {
+        private Data data;
+        private Status status;
+    }
+
+    @lombok.Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Data {
+        String transactionCode;
+        String transactionDate;
+        String transactionStatus;
+
+    }
+
+    @lombok.Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Status {
+        private String code;
+        private String message;
+        private String description;
+    }
+
+    @lombok.Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Meta {
+        private String transactionId;
+    }
 }

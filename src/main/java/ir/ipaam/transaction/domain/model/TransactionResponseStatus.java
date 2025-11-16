@@ -6,8 +6,4 @@ public enum TransactionResponseStatus {
     REVERSED,
     REVERSING,
     INPROGRESS,
-    //    CALL_CORE,
-//    REQUESTED,
-//    UPDATED,
-//    TRANSACTION_INQUIRY
 }

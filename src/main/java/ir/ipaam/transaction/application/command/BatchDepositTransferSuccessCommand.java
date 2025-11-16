@@ -4,7 +4,10 @@ import lombok.Value;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
 @Value
-public class TransactionInquiryCommand {
+public class BatchDepositTransferSuccessCommand {
+
     @TargetAggregateIdentifier
-    String id;
+    String transactionId;
+    String transactionCode;
+    String transactionDate;
 }
