@@ -51,13 +51,15 @@ springdoc:
 axon:
   axonserver:
     enabled: false
+  serializer:
+    events: jackson
   eventhandling:
     processors:
-      transaction-command:
+      transaction:
         mode: subscribing
-      transaction-projection:
-        mode: subscribing
-        source: eventBus
+      transaction-handler:
+          mode: subscribing
+#        source: eventBus
 #        mode: tracking
 #        source: eventStore
 #         optional: start at tail (to read past events)

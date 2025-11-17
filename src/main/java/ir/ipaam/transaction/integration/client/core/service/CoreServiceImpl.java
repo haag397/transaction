@@ -31,7 +31,7 @@ public class CoreServiceImpl implements CoreService {
         try {
             return coreClient.transactionInquiry(transactionId);
         } catch (FeignException feignException) {
-            handleFeignException(feignException, "خطا در فراخوانی سرویس استعالم تراکنش");
+            handleFeignException(feignException, "خطا در فراخوانی سرویس استعلام تراکنش");
         }
         return null;
     }
@@ -51,7 +51,17 @@ public class CoreServiceImpl implements CoreService {
         try {
             return coreClient.polTransfer(request);
         } catch (FeignException feignException) {
-            handleFeignException(feignException, "خطا در فراخوانی سرویس انتقال وجه پون");
+            handleFeignException(feignException, "خطا در فراخوانی سرویس انتقال وجه پل");
+        }
+        return null;
+    }
+
+    @Override
+    public CoreDepositAccountHoldersResponseDTO depositAccountHolders(String depositNumber) {
+        try {
+            return coreClient.depositAccountHolders(depositNumber);
+        } catch (FeignException feignException) {
+            handleFeignException(feignException, "خطا در فراخوانی سرویس استعلام اطلاعات دارندگان حساب");
         }
         return null;
     }

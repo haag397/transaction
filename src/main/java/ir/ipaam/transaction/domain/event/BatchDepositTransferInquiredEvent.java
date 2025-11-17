@@ -1,6 +1,8 @@
 package ir.ipaam.transaction.domain.event;
 
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
+import ir.ipaam.transaction.domain.model.TransactionSubType;
+import ir.ipaam.transaction.domain.model.TransactionType;
 import lombok.Value;
 
 @Value

@@ -8,5 +8,4 @@ public class BatchDepositTransferFailCommand {
 
     @TargetAggregateIdentifier
     String transactionId;
-    String errorMessage;
 }

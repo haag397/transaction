@@ -9,33 +9,41 @@ import ir.ipaam.transaction.domain.event.BatchDepositTransferInquiredEvent;
 import ir.ipaam.transaction.domain.event.BatchDepositTransferRequestedEvent;
 import ir.ipaam.transaction.domain.event.BatchDepositTransferSucceededEvent;
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
+import ir.ipaam.transaction.domain.model.TransactionSubType;
+import ir.ipaam.transaction.domain.model.TransactionType;
 import lombok.NoArgsConstructor;
 import org.axonframework.commandhandling.CommandHandler;
-import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.spring.stereotype.Aggregate;
+
+import java.util.Map;
 
 import static org.axonframework.modelling.command.AggregateLifecycle.apply;
 
 @Aggregate
 @NoArgsConstructor
-@ProcessingGroup("transaction-command")
+//@ProcessingGroup("transaction-command")
 public class BatchDepositTransferAggregate {
 
     @AggregateIdentifier
     private String transactionId;
-
-    private String source;
-    private String sourceTitle;
-    private String destination;
-    private String destinationTitle;
-    private Long amount;
-    private String description;
-    private String sourceDescription;
-    private String extraDescription;
-    private TransactionResponseStatus status;
-
+    String source;
+    String sourceTitle;
+    String destination;
+    String destinationTitle;
+    Long amount;
+    String description;
+    String sourceDescription;
+    String extraDescription;
+    Map<String, Object> extraInformation;
+    String transactionCode;
+    String transactionDate;
+    TransactionResponseStatus status;
+    String reason;
+    String refNumber;
+    TransactionType type;
+    TransactionSubType subType;
     private boolean completed = false;
 
     @CommandHandler
@@ -51,7 +59,10 @@ public class BatchDepositTransferAggregate {
                 .description(cmd.getDescription())
                 .sourceDescription(cmd.getSourceDescription())
                 .extraDescription(cmd.getExtraDescription())
-                .extraInformation(cmd.getExtraInformation())   // optional
+                .reason(cmd.getReason())
+                .extraInformation(cmd.getExtraInformation())
+                .type(cmd.getType())
+                .subType(cmd.getSubType())
                 .build()
         );
     }
@@ -67,58 +78,67 @@ public class BatchDepositTransferAggregate {
         this.description = e.getDescription();
         this.sourceDescription = e.getSourceDescription();
         this.extraDescription = e.getExtraDescription();
-        this.completed = false;
+        this.extraInformation = e.getExtraInformation();
+        this.reason = e.getReason();
+        this.type = e.getType();
+        this.subType = e.getSubType();
     }
 
     @CommandHandler
     public void handle(BatchDepositTransferSuccessCommand cmd) {
-
-        if (completed) return;
-
-        apply(new BatchDepositTransferSucceededEvent(
-                cmd.getTransactionId(),
-                cmd.getTransactionCode(),
-                cmd.getTransactionDate()
-        ));
+        if (!completed) {
+            apply(new BatchDepositTransferSucceededEvent(
+                    cmd.getTransactionId(),
+                    cmd.getTransactionCode(),
+                    cmd.getTransactionDate()
+            ));
+        }
     }
 
     @EventSourcingHandler
     public void on(BatchDepositTransferSucceededEvent e) {
         this.completed = true;
+        this.transactionId = e.getTransactionId();
+        this.transactionCode = e.getTransactionCode();
+        this.transactionDate = e.getTransactionDate();
+
     }
 
     @CommandHandler
     public void handle(BatchDepositTransferFailCommand cmd) {
-
-        if (completed) return;
-
-        apply(new BatchDepositTransferFailedEvent(
-                cmd.getTransactionId(),
-                cmd.getErrorMessage()
-        ));
+        if (!completed) {
+            apply(new BatchDepositTransferFailedEvent(
+                    cmd.getTransactionId()
+            ));
+        }
     }
 
     @EventSourcingHandler
     public void on(BatchDepositTransferFailedEvent e) {
         this.completed = true;
+        this.transactionId = e.getTransactionId();
     }
 
     @CommandHandler
     public void handle(BatchDepositTransferInquiredCommand cmd) {
-
-        if (completed) return;
-
-        apply(new BatchDepositTransferInquiredEvent(
-                cmd.getTransactionId(),
-                cmd.getTransactionCode(),
-                cmd.getTransactionDate(),
-                cmd.getStatus(),
-                cmd.getRefNumber()
-        ));
+        if (!completed) {
+            apply(new BatchDepositTransferInquiredEvent(
+                    cmd.getTransactionId(),
+                    cmd.getTransactionCode(),
+                    cmd.getTransactionDate(),
+                    cmd.getStatus(),
+                    cmd.getRefNumber()
+            ));
+        }
     }
 
     @EventSourcingHandler
     public void on(BatchDepositTransferInquiredEvent e) {
         this.completed = true;
+        this.transactionId = e.getTransactionId();
+        this.transactionCode = e.getTransactionCode();
+        this.transactionDate = e.getTransactionDate();
+        this.status = e.getStatus();
+        this.refNumber = e.getRefNumber();
     }
 }

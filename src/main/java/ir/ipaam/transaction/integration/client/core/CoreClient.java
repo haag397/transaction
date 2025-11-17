@@ -1,29 +1,26 @@
 package ir.ipaam.transaction.integration.client.core;
 
-import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferRequestDTO;
-import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferResponseDTO;
-import ir.ipaam.transaction.integration.client.core.dto.CorePolTransferRequestDTO;
-import ir.ipaam.transaction.integration.client.core.dto.CorePolTransferResponseDTO;
-import ir.ipaam.transaction.integration.client.core.dto.CoreSatnaTransferRequestDTO;
-import ir.ipaam.transaction.integration.client.core.dto.CoreSatnaTransferResponseDTO;
-import ir.ipaam.transaction.integration.client.core.dto.CoreTransactionInquiryResponseDTO;
+import ir.ipaam.transaction.integration.client.core.dto.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "core-client", url = "http://localhost:8290/api/corebanking/payment/v1.0")
+@FeignClient(name = "core-client", url = "http://localhost:8290/api/corebanking")
 public interface CoreClient {
-    @PostMapping("/accounts/transfer")
+    @PostMapping("/payment/v1.0/accounts/transfer")
     CoreBatchDepositTransferResponseDTO batchDepositTransfer(@RequestBody CoreBatchDepositTransferRequestDTO request);
     
-    @GetMapping("/transaction/{transactionId}")
+    @GetMapping("/payment/v1.0/transaction/{transactionId}")
     CoreTransactionInquiryResponseDTO transactionInquiry(@PathVariable String transactionId);
+
+    @GetMapping("/deposits/v1.0/holders/{depositNumber}")
+    CoreDepositAccountHoldersResponseDTO depositAccountHolders(@PathVariable String depositNumber);
     
-    @PostMapping("/satna")
+    @PostMapping("/payment/v1.0/satna")
     CoreSatnaTransferResponseDTO satnaTransfer(@RequestBody CoreSatnaTransferRequestDTO request);
 
-    @PostMapping("/pol")
+    @PostMapping("/payment/v1.0/pol")
     CorePolTransferResponseDTO polTransfer(@RequestBody CorePolTransferRequestDTO request);
 }

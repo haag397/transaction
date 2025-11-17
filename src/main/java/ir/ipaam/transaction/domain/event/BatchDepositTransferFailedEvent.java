@@ -5,5 +5,4 @@ import lombok.Value;
 @Value
 public class BatchDepositTransferFailedEvent {
     String transactionId;
-    String errorMessage;
 }

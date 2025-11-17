@@ -58,7 +58,7 @@ public class Transaction {
     private Map<String, Object> extraInformation;
 
     @Column(name = "reason")
-    private String reason; //reason
+    private String reason;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
@@ -80,7 +80,4 @@ public class Transaction {
 
     @Column(name = "ref_number")
     private String refNumber;
-
-    @Column(name = "error_message")
-    private String errorMessage;
 }

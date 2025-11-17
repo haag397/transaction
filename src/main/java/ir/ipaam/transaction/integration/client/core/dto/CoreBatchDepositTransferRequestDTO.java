@@ -12,12 +12,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class CoreBatchDepositTransferRequestDTO {
-    String documentItemType;
-    String sourceAccount;
-    String branchCode;
-    Long sourceAmount;
-    String sourceComment;
-    String transferBillNumber;
-    String transactionId;
-    List<CreditorDTO> creditors;
+    private String sourceAccount;
+    private String documentItemType;
+    private String branchCode;
+    private Long sourceAmount;
+    private String sourceComment;
+    private String transferBillNumber;
+    private String transactionId;
+    private List<CreditorDTO> creditors;
 }
