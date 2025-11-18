@@ -10,6 +10,7 @@ import org.axonframework.eventhandling.EventHandler;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -35,6 +36,7 @@ public class TransactionProjection {
                 .extraInformation(e.getExtraInformation())
                 .type(e.getType())
                 .subType(e.getSubType())
+                .reason(e.getReason())
                 .status(TransactionResponseStatus.INPROGRESS)
                 .build();
 

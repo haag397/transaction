@@ -1,24 +1,25 @@
 package ir.ipaam.transaction.application.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
+import ir.ipaam.transaction.api.write.dto.BatchDepositTransferResponseDTO;
 import ir.ipaam.transaction.application.command.BatchDepositTransferFailCommand;
 import ir.ipaam.transaction.application.command.BatchDepositTransferInquiredCommand;
 import ir.ipaam.transaction.application.command.BatchDepositTransferSuccessCommand;
 import ir.ipaam.transaction.domain.event.BatchDepositTransferRequestedEvent;
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
-import ir.ipaam.transaction.integration.client.core.dto.*;
+import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferRequestDTO;
+import ir.ipaam.transaction.integration.client.core.dto.CoreDepositAccountHoldersResponseDTO;
+import ir.ipaam.transaction.integration.client.core.dto.CreditorDTO;
 import ir.ipaam.transaction.integration.client.core.service.CoreService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 @ProcessingGroup("transaction")
@@ -30,8 +31,6 @@ public class BatchDepositTransferEventHandler {
     @EventHandler
     public void on(BatchDepositTransferRequestedEvent event) {
 
-        log.info("Handler START → {}", event.getTransactionId());
-
         try {
             String sourceName = extractFullName(coreService.depositAccountHolders(event.getSource()));
             String destName   = extractFullName(coreService.depositAccountHolders(event.getDestination()));
@@ -39,7 +38,7 @@ public class BatchDepositTransferEventHandler {
             CoreBatchDepositTransferRequestDTO coreRequest =
                     buildCoreRequest(event, sourceName, destName);
 
-            CoreBatchDepositTransferResponseDTO response =
+            BatchDepositTransferResponseDTO response =
                     coreService.batchDepositTransfer(coreRequest);
 
             boolean isSuccess =
@@ -48,74 +47,81 @@ public class BatchDepositTransferEventHandler {
                             "200".equals(response.getStatus().getCode());
 
             if (isSuccess) {
-                log.info("SUCCESS → {}", event.getTransactionId());
 
                 commandGateway.send(new BatchDepositTransferSuccessCommand(
                         event.getTransactionId(),
                         response.getResult().getData().getTransactionCode(),
                         response.getResult().getData().getTransactionDate()
                 ));
+
+                // Final event → send to controller via subscription query
+                commandGateway.send(new BatchDepositTransferFinalizeCommand(
+                        event.getTransactionId(),
+                        response   // unified dto
+                ));
+
                 return;
             }
 
-            log.error("FAIL → {}", event.getTransactionId());
+            commandGateway.send(new BatchDepositTransferFailCommand(event.getTransactionId()));
 
-            commandGateway.send(new BatchDepositTransferFailCommand(
-                    event.getTransactionId()
+            commandGateway.send(new BatchDepositTransferFinalizeCommand(
+                    event.getTransactionId(),
+                    response
             ));
         }
 
         catch (FeignException.FeignClientException timeout) {
 
             if (timeout.status() == 408) {
-                log.warn("TIMEOUT → Running inquiry for {}", event.getTransactionId());
 
-                var inquiry = coreService.transactionInquiry(event.getTransactionId());
+                BatchDepositTransferResponseDTO inquiryResponse =
+                        coreService.transactionInquiry(event.getTransactionId());
 
                 commandGateway.send(new BatchDepositTransferInquiredCommand(
                         event.getTransactionId(),
-                        inquiry.getResult().getData().getTransactionCode(),
-                        inquiry.getResult().getData().getTransactionDate(),
-                        mapStatus(inquiry.getResult().getData().getTransactionStatus()),
-                        inquiry.getResult().getData().getTransactionStatus()
+                        inquiryResponse.getResult().getData().getTransactionCode(),
+                        inquiryResponse.getResult().getData().getTransactionDate(),
+                        mapStatus(inquiryResponse.getResult().getData().getTransactionStatus()),
+                        inquiryResponse.getResult().getData().getTransactionStatus()
                 ));
+
+                commandGateway.send(new BatchDepositTransferFinalizeCommand(
+                        event.getTransactionId(),
+                        inquiryResponse
+                ));
+
             } else {
-                // Other 4xx → Fail
-                commandGateway.send(new BatchDepositTransferFailCommand(
-                        event.getTransactionId()
-                ));
+                commandGateway.send(new BatchDepositTransferFailCommand(event.getTransactionId()));
             }
         }
 
         catch (FeignException.FeignServerException serverError) {
 
-            log.error("SERVER ERROR → {}", serverError.getMessage());
+            commandGateway.send(new BatchDepositTransferFailCommand(event.getTransactionId()));
 
-            commandGateway.send(new BatchDepositTransferFailCommand(
-                    event.getTransactionId()
-            ));
         }
-
         catch (Exception ex) {
-            log.error("UNEXPECTED ERROR → {}", ex.getMessage());
-            commandGateway.send(new BatchDepositTransferFailCommand(
-                    event.getTransactionId()
-            ));
+            commandGateway.send(new BatchDepositTransferFailCommand(event.getTransactionId()));
         }
     }
 
     private String extractFullName(CoreDepositAccountHoldersResponseDTO res) {
-        if (res == null ||
-                res.getResult() == null ||
-                res.getResult().getData() == null ||
-                res.getResult().getData().getDepositOwnerInfos() == null ||
-                res.getResult().getData().getDepositOwnerInfos().isEmpty()) {
-            return "";
-        }
-        var owner = res.getResult().getData().getDepositOwnerInfos().get(0);
-        return owner.getFirstName() + " " + owner.getLastName();
-    }
+//        if (res == null ||
+//                res.getResult() == null ||
+//                res.getResult().getData() == null ||
+//                res.getResult().getData().getDepositOwnerInfos() == null ||
+//                res.getResult().getData().getDepositOwnerInfos().isEmpty()) {
+//            return "";
+//        }
 
+        return res.getResult()
+                .getData()
+                .getDepositOwnerInfos()
+                .stream()
+                .map(o -> o.getFirstName() + " " + o.getLastName())
+                .collect(Collectors.joining(", "));
+    }
 
     private CoreBatchDepositTransferRequestDTO buildCoreRequest(
             BatchDepositTransferRequestedEvent e,

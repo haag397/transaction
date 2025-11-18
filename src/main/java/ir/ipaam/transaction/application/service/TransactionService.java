@@ -1,9 +1,11 @@
 package ir.ipaam.transaction.application.service;
 
 import ir.ipaam.transaction.api.write.dto.BatchDepositTransferRequestDTO;
+import ir.ipaam.transaction.api.write.dto.BatchDepositTransferResponseDTO;
 import ir.ipaam.transaction.application.command.BatchDepositTransferCommand;
 import ir.ipaam.transaction.domain.model.TransactionSubType;
 import ir.ipaam.transaction.domain.model.TransactionType;
+import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferResponseDTO;
 import ir.ipaam.transaction.integration.client.core.dto.CoreDepositAccountHoldersResponseDTO;
 import ir.ipaam.transaction.integration.client.core.service.CoreService;
 import ir.ipaam.transaction.query.model.Transaction;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,10 +28,12 @@ public class TransactionService {
     private final TransactionRepository repository;
     private final CoreService coreService;
 
+//    public CompletableFuture<CoreBatchDepositTransferResponseDTO> startBatchTransfer(
+    public CompletableFuture<BatchDepositTransferResponseDTO> startBatchTransfer(
 
-    public String startBatchTransfer(BatchDepositTransferRequestDTO request) {
-
+                    BatchDepositTransferRequestDTO request) {
         String transactionId = TransactionIdGenerator.generate();
+        UUID id = UUID.randomUUID();
 
         var sourceHolder = coreService.depositAccountHolders(request.getSource());
         String sourceName = extractFullName(sourceHolder);
@@ -35,10 +41,9 @@ public class TransactionService {
         var destHolder = coreService.depositAccountHolders(request.getDestination());
         String destName = extractFullName(destHolder);
 
-        commandGateway.send(
-                BatchDepositTransferCommand.builder()
+        BatchDepositTransferCommand command = BatchDepositTransferCommand.builder()
                         .transactionId(transactionId)
-                        .id(UUID.randomUUID())
+                        .id(id)
                         .source(request.getSource())
                         .sourceTitle(sourceName)
                         .destination(request.getDestination())
@@ -49,18 +54,30 @@ public class TransactionService {
                         .extraDescription(request.getDescription())
                         .reason(request.getReason())
                         .extraInformation(Map.of(
-                                "transferBillNumber", request.getTransferBillNumber()
+                                "description", request.getDescription()
                         ))
                         .type(TransactionType.ACCOUNT_TRANSFER)
                         .subType(TransactionSubType.charge)
-                        .build()
-        );
+                        .build();
 
-        return transactionId;
+        return commandGateway.send(command);
     }
     private String extractFullName(CoreDepositAccountHoldersResponseDTO res) {
-        var owner = res.getResult().getData().getDepositOwnerInfos().get(0);
-        return owner.getFirstName() + " " + owner.getLastName();
+
+//        if (res == null ||
+//                res.getResult() == null ||
+//                res.getResult().getData() == null ||
+//                res.getResult().getData().getDepositOwnerInfos() == null ||
+//                res.getResult().getData().getDepositOwnerInfos().isEmpty()) {
+//            return "";
+//        }
+
+        return res.getResult()
+                .getData()
+                .getDepositOwnerInfos()
+                .stream()
+                .map(o -> o.getFirstName() + " " + o.getLastName())
+                .collect(Collectors.joining(", "));
     }
 
     public Transaction getTransaction(String transactionId) {

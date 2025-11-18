@@ -9,8 +9,9 @@ import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
+//@NoArgsConstructor
 @Builder
+@Value
 public class BatchDepositTransferRequestedEvent {
     String transactionId;
     UUID id;

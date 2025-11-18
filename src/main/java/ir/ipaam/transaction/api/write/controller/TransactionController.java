@@ -1,14 +1,17 @@
 package ir.ipaam.transaction.api.write.controller;
 
 import ir.ipaam.transaction.api.write.dto.BatchDepositTransferRequestDTO;
+import ir.ipaam.transaction.api.write.dto.BatchDepositTransferResponseDTO;
 import ir.ipaam.transaction.application.service.TransactionService;
 import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferRequestDTO;
+import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferResponseDTO;
 import ir.ipaam.transaction.query.model.Transaction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/v1/transactions")
@@ -18,9 +21,12 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @PostMapping("/deposit/batch")
-    public ResponseEntity<?> batchTransfer(@RequestBody BatchDepositTransferRequestDTO request) {
-        String transactionId = transactionService.startBatchTransfer(request);
-        return ResponseEntity.ok(Map.of("transactionId", transactionId));
+//    public CompletableFuture<ResponseEntity<CoreBatchDepositTransferResponseDTO>> batchTransfer(
+    public CompletableFuture<ResponseEntity<BatchDepositTransferResponseDTO>> batchTransfer(
+                    @RequestBody BatchDepositTransferRequestDTO request) {
+
+        return transactionService.startBatchTransfer(request)
+                .thenApply(ResponseEntity::ok);
     }
 
     @GetMapping("/{transactionId}")

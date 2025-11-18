@@ -51,6 +51,7 @@ public class BatchDepositTransferAggregate {
 
         apply(BatchDepositTransferRequestedEvent.builder()
                 .transactionId(cmd.getTransactionId())
+                .id(cmd.getId())
                 .source(cmd.getSource())
                 .sourceTitle(cmd.getSourceTitle())
                 .destination(cmd.getDestination())

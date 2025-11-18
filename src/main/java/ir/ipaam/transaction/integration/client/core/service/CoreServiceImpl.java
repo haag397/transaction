@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import ir.ipaam.common.exception.CustomBusinessException;
+import ir.ipaam.transaction.api.write.dto.BatchDepositTransferResponseDTO;
 import ir.ipaam.transaction.integration.client.core.CoreClient;
 import ir.ipaam.transaction.integration.client.core.dto.*;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +18,10 @@ public class CoreServiceImpl implements CoreService {
     private final CoreClient coreClient;
 
     @Override
-    public CoreBatchDepositTransferResponseDTO batchDepositTransfer(CoreBatchDepositTransferRequestDTO request) {
-        try {
+//    public CoreBatchDepositTransferResponseDTO batchDepositTransfer(CoreBatchDepositTransferRequestDTO request) {
+    public BatchDepositTransferResponseDTO batchDepositTransfer(CoreBatchDepositTransferRequestDTO request) {
+
+            try {
             return coreClient.batchDepositTransfer(request);
         } catch (FeignException feignException) {
             handleFeignException(feignException, "خطا در فراخوانی سرویس انتقال وجه حساب به حساب گروهی");
@@ -27,8 +30,10 @@ public class CoreServiceImpl implements CoreService {
     }
 
     @Override
-    public CoreTransactionInquiryResponseDTO transactionInquiry(String transactionId) {
-        try {
+//    public CoreTransactionInquiryResponseDTO transactionInquiry(String transactionId) {
+    public BatchDepositTransferResponseDTO transactionInquiry(String transactionId) {
+
+            try {
             return coreClient.transactionInquiry(transactionId);
         } catch (FeignException feignException) {
             handleFeignException(feignException, "خطا در فراخوانی سرویس استعلام تراکنش");

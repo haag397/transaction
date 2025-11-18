@@ -1,4 +1,4 @@
-package ir.ipaam.transaction.integration.client.core.dto;
+package ir.ipaam.transaction.api.write.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CoreTransactionInquiryResponseDTO {
+public class BatchDepositTransferResponseDTO {
 
     private Result result;
     private Status status;
@@ -29,10 +29,12 @@ public class CoreTransactionInquiryResponseDTO {
     @AllArgsConstructor
     @Builder
     public static class Data {
-        String transactionCode;
-        String transactionDate;
-        String transactionStatus;
-        String transactionRefNumber;
+        private String transactionDate;
+        private String transactionId;
+        private String transactionCode;
+
+        private String transactionStatus;     // ← inquiry only
+        private String transactionRefNumber;  // ← inquiry only
     }
 
     @lombok.Data
@@ -53,3 +55,4 @@ public class CoreTransactionInquiryResponseDTO {
         private String transactionId;
     }
 }
+
