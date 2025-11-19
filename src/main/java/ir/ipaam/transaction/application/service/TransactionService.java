@@ -1,5 +1,7 @@
 package ir.ipaam.transaction.application.service;
 
+import ir.ipaam.common.dto.QuerySubscriptionDTO;
+import ir.ipaam.common.orchestration.QueryCommandFlowGateway;
 import ir.ipaam.transaction.api.write.dto.BatchDepositTransferRequestDTO;
 import ir.ipaam.transaction.api.write.dto.BatchDepositTransferResponseDTO;
 import ir.ipaam.transaction.application.command.BatchDepositTransferCommand;
@@ -15,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -27,11 +31,12 @@ public class TransactionService {
     private final CommandGateway commandGateway;
     private final TransactionRepository repository;
     private final CoreService coreService;
+    private final QueryCommandFlowGateway queryCommandFlowGateway;
 
 //    public CompletableFuture<CoreBatchDepositTransferResponseDTO> startBatchTransfer(
     public CompletableFuture<BatchDepositTransferResponseDTO> startBatchTransfer(
 
-                    BatchDepositTransferRequestDTO request) {
+            BatchDepositTransferRequestDTO request) {
         String transactionId = TransactionIdGenerator.generate();
         UUID id = UUID.randomUUID();
 
@@ -60,18 +65,21 @@ public class TransactionService {
                         .subType(TransactionSubType.charge)
                         .build();
 
-        return commandGateway.send(command);
+//        return commandGateway.send(command);
+        return queryCommandFlowGateway.sendCommandAndWaitForAll(
+                command,
+                List.of(
+                        new QuerySubscriptionDTO<>(
+                                new GetTransactionStatusQuery(transactionId),
+                                Transaction.class
+                        )
+                ),
+                results -> mapToResponse((Transaction) results.get(Transaction.class)),
+                errors -> mapError(errors),
+                Duration.ofSeconds(25)
+        );
     }
     private String extractFullName(CoreDepositAccountHoldersResponseDTO res) {
-
-//        if (res == null ||
-//                res.getResult() == null ||
-//                res.getResult().getData() == null ||
-//                res.getResult().getData().getDepositOwnerInfos() == null ||
-//                res.getResult().getData().getDepositOwnerInfos().isEmpty()) {
-//            return "";
-//        }
-
         return res.getResult()
                 .getData()
                 .getDepositOwnerInfos()
@@ -83,5 +91,62 @@ public class TransactionService {
     public Transaction getTransaction(String transactionId) {
         return repository.findByTransactionId(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
+    }
+    private BatchDepositTransferResponseDTO mapToResponse(Transaction tx) {
+        BatchDepositTransferResponseDTO.Data data =
+                BatchDepositTransferResponseDTO.Data.builder()
+                        .transactionId(tx.getTransactionId())
+                        .transactionCode(tx.getTransactionCode())
+                        .transactionDate(tx.getTransactionDate() != null ? tx.getTransactionDate().toString() : null)
+                        .transactionStatus(tx.getStatus().name())
+                        .transactionRefNumber(tx.getRefNumber())
+                        .build();
+
+        BatchDepositTransferResponseDTO.Status innerStatus =
+                BatchDepositTransferResponseDTO.Status.builder()
+                        .code("200")
+                        .message("OK")
+                        .description(null)
+                        .build();
+
+        BatchDepositTransferResponseDTO.Result result =
+                BatchDepositTransferResponseDTO.Result.builder()
+                        .data(data)
+                        .status(innerStatus)
+                        .build();
+
+        BatchDepositTransferResponseDTO.Status apiStatus =
+                BatchDepositTransferResponseDTO.Status.builder()
+                        .code("200")
+                        .message("OK")
+                        .description(null)
+                        .build();
+
+        BatchDepositTransferResponseDTO.Meta meta =
+                BatchDepositTransferResponseDTO.Meta.builder()
+                        .transactionId(tx.getTransactionId())
+                        .build();
+
+        return BatchDepositTransferResponseDTO.builder()
+                .result(result)
+                .status(apiStatus)
+                .meta(meta)
+                .build();
+    }
+
+    private BatchDepositTransferResponseDTO mapError(Map<Class<?>, Object> errors) {
+
+        BatchDepositTransferResponseDTO.Status status =
+                BatchDepositTransferResponseDTO.Status.builder()
+                        .code("500")
+                        .message("FAILED")
+                        .description("Worker returned error or timeout")
+                        .build();
+
+        return BatchDepositTransferResponseDTO.builder()
+                .status(status)
+                .meta(null)
+                .result(null)
+                .build();
     }
 }

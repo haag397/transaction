@@ -58,7 +58,7 @@ axon:
       transaction:
         mode: subscribing
       transaction-handler:
-          mode: subscribing
+        mode: subscribing
 #        source: eventBus
 #        mode: tracking
 #        source: eventStore

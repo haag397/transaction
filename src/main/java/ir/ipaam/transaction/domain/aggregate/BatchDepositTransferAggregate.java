@@ -1,13 +1,7 @@
 package ir.ipaam.transaction.domain.aggregate;
 
-import ir.ipaam.transaction.application.command.BatchDepositTransferCommand;
-import ir.ipaam.transaction.application.command.BatchDepositTransferFailCommand;
-import ir.ipaam.transaction.application.command.BatchDepositTransferInquiredCommand;
-import ir.ipaam.transaction.application.command.BatchDepositTransferSuccessCommand;
-import ir.ipaam.transaction.domain.event.BatchDepositTransferFailedEvent;
-import ir.ipaam.transaction.domain.event.BatchDepositTransferInquiredEvent;
-import ir.ipaam.transaction.domain.event.BatchDepositTransferRequestedEvent;
-import ir.ipaam.transaction.domain.event.BatchDepositTransferSucceededEvent;
+import ir.ipaam.transaction.application.command.*;
+import ir.ipaam.transaction.domain.event.*;
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
 import ir.ipaam.transaction.domain.model.TransactionSubType;
 import ir.ipaam.transaction.domain.model.TransactionType;
@@ -23,27 +17,26 @@ import static org.axonframework.modelling.command.AggregateLifecycle.apply;
 
 @Aggregate
 @NoArgsConstructor
-//@ProcessingGroup("transaction-command")
 public class BatchDepositTransferAggregate {
 
     @AggregateIdentifier
     private String transactionId;
-    String source;
-    String sourceTitle;
-    String destination;
-    String destinationTitle;
-    Long amount;
-    String description;
-    String sourceDescription;
-    String extraDescription;
-    Map<String, Object> extraInformation;
-    String transactionCode;
-    String transactionDate;
-    TransactionResponseStatus status;
-    String reason;
-    String refNumber;
-    TransactionType type;
-    TransactionSubType subType;
+    private String source;
+    private String sourceTitle;
+    private String destination;
+    private String destinationTitle;
+    private Long amount;
+    private String description;
+    private String sourceDescription;
+    private String extraDescription;
+    private Map<String, Object> extraInformation;
+    private String transactionCode;
+    private String transactionDate;
+    private TransactionResponseStatus status;
+    private String reason;
+    private String refNumber;
+    private TransactionType type;
+    private TransactionSubType subType;
     private boolean completed = false;
 
     @CommandHandler

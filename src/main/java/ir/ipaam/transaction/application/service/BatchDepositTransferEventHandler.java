@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-@ProcessingGroup("transaction")
+@ProcessingGroup("transaction-handler")
 public class BatchDepositTransferEventHandler {
 
     private final CommandGateway commandGateway;
@@ -41,35 +41,21 @@ public class BatchDepositTransferEventHandler {
             BatchDepositTransferResponseDTO response =
                     coreService.batchDepositTransfer(coreRequest);
 
-            boolean isSuccess =
+            boolean success =
                     response != null &&
                             response.getStatus() != null &&
                             "200".equals(response.getStatus().getCode());
 
-            if (isSuccess) {
+            if (success) {
 
                 commandGateway.send(new BatchDepositTransferSuccessCommand(
                         event.getTransactionId(),
                         response.getResult().getData().getTransactionCode(),
                         response.getResult().getData().getTransactionDate()
                 ));
-
-                // Final event → send to controller via subscription query
-                commandGateway.send(new BatchDepositTransferFinalizeCommand(
-                        event.getTransactionId(),
-                        response   // unified dto
-                ));
-
-                return;
-            }
-
-            commandGateway.send(new BatchDepositTransferFailCommand(event.getTransactionId()));
-
-            commandGateway.send(new BatchDepositTransferFinalizeCommand(
-                    event.getTransactionId(),
-                    response
-            ));
-        }
+            }else {
+                commandGateway.send(new BatchDepositTransferFailCommand(event.getTransactionId()));
+            }}
 
         catch (FeignException.FeignClientException timeout) {
 
@@ -84,11 +70,6 @@ public class BatchDepositTransferEventHandler {
                         inquiryResponse.getResult().getData().getTransactionDate(),
                         mapStatus(inquiryResponse.getResult().getData().getTransactionStatus()),
                         inquiryResponse.getResult().getData().getTransactionStatus()
-                ));
-
-                commandGateway.send(new BatchDepositTransferFinalizeCommand(
-                        event.getTransactionId(),
-                        inquiryResponse
                 ));
 
             } else {
@@ -107,14 +88,6 @@ public class BatchDepositTransferEventHandler {
     }
 
     private String extractFullName(CoreDepositAccountHoldersResponseDTO res) {
-//        if (res == null ||
-//                res.getResult() == null ||
-//                res.getResult().getData() == null ||
-//                res.getResult().getData().getDepositOwnerInfos() == null ||
-//                res.getResult().getData().getDepositOwnerInfos().isEmpty()) {
-//            return "";
-//        }
-
         return res.getResult()
                 .getData()
                 .getDepositOwnerInfos()
