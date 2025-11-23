@@ -62,11 +62,11 @@ public class TransactionProjection {
             tx.setTransactionDate(parse(e.getTransactionDate()));
             tx.setStatus(TransactionResponseStatus.SUCCESS);
             repository.save(tx);
-            queryUpdateEmitter.emit(
-                    GetTransactionStatusQuery.class,
-                    q -> q.getTransactionId().equals(e.getTransactionId()),
-                    tx
-            );
+//            queryUpdateEmitter.emit(
+//                    GetTransactionStatusQuery.class,
+//                    q -> q.getTransactionId().equals(e.getTransactionId()),
+//                    tx
+//            );
         });
     }
 
@@ -76,11 +76,11 @@ public class TransactionProjection {
         repository.findByTransactionId(e.getTransactionId()).ifPresent(tx -> {
             tx.setStatus(TransactionResponseStatus.UNSUCCESS);
             repository.save(tx);
-            queryUpdateEmitter.emit(
-                    GetTransactionStatusQuery.class,
-                    q -> q.getTransactionId().equals(e.getTransactionId()),
-                    tx
-            );
+//            queryUpdateEmitter.emit(
+//                    GetTransactionStatusQuery.class,
+//                    q -> q.getTransactionId().equals(e.getTransactionId()),
+//                    tx
+//            );
         });
     }
 
@@ -93,11 +93,11 @@ public class TransactionProjection {
             tx.setStatus(e.getStatus());
             tx.setRefNumber(e.getRefNumber());
             repository.save(tx);
-            queryUpdateEmitter.emit(
-                    GetTransactionStatusQuery.class,
-                    q -> q.getTransactionId().equals(e.getTransactionId()),
-                    tx
-            );
+//            queryUpdateEmitter.emit(
+//                    GetTransactionStatusQuery.class,
+//                    q -> q.getTransactionId().equals(e.getTransactionId()),
+//                    tx
+//            );
         });
     }
     @QueryHandler

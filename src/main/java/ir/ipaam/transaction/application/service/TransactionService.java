@@ -33,10 +33,9 @@ public class TransactionService {
     private final CoreService coreService;
     private final QueryCommandFlowGateway queryCommandFlowGateway;
 
-//    public CompletableFuture<CoreBatchDepositTransferResponseDTO> startBatchTransfer(
     public CompletableFuture<BatchDepositTransferResponseDTO> startBatchTransfer(
-
             BatchDepositTransferRequestDTO request) {
+
         String transactionId = TransactionIdGenerator.generate();
         UUID id = UUID.randomUUID();
 
@@ -47,38 +46,39 @@ public class TransactionService {
         String destName = extractFullName(destHolder);
 
         BatchDepositTransferCommand command = BatchDepositTransferCommand.builder()
-                        .transactionId(transactionId)
-                        .id(id)
-                        .source(request.getSource())
-                        .sourceTitle(sourceName)
-                        .destination(request.getDestination())
-                        .destinationTitle(destName)
-                        .amount(request.getAmount())
-                        .description(request.getDescription())
-                        .sourceDescription(request.getSourceDescription())
-                        .extraDescription(request.getDescription())
-                        .reason(request.getReason())
-                        .extraInformation(Map.of(
-                                "description", request.getDescription()
-                        ))
-                        .type(TransactionType.ACCOUNT_TRANSFER)
-                        .subType(TransactionSubType.charge)
-                        .build();
+                .transactionId(transactionId)
+                .id(id)
+                .source(request.getSource())
+                .sourceTitle(sourceName)
+                .destination(request.getDestination())
+                .destinationTitle(destName)
+                .amount(request.getAmount())
+                .description(request.getDescription())
+                .sourceDescription(request.getSourceDescription())
+                .extraDescription(request.getDescription())
+                .reason(request.getReason())
+                .extraInformation(Map.of(
+                        "description", request.getDescription()
+                ))
+                .type(TransactionType.ACCOUNT_TRANSFER)
+                .subType(TransactionSubType.charge)
+                .build();
 
-//        return commandGateway.send(command);
         return queryCommandFlowGateway.sendCommandAndWaitForAll(
                 command,
                 List.of(
                         new QuerySubscriptionDTO<>(
                                 new GetTransactionStatusQuery(transactionId),
-                                Transaction.class
+                                BatchDepositTransferResponseDTO.class
                         )
                 ),
-                results -> mapToResponse((Transaction) results.get(Transaction.class)),
+                results -> (BatchDepositTransferResponseDTO)
+                        results.get(BatchDepositTransferResponseDTO.class),
                 errors -> mapError(errors),
                 Duration.ofSeconds(25)
         );
     }
+
     private String extractFullName(CoreDepositAccountHoldersResponseDTO res) {
         return res.getResult()
                 .getData()

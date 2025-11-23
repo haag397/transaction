@@ -6,6 +6,7 @@ import ir.ipaam.transaction.application.service.TransactionService;
 import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferRequestDTO;
 import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferResponseDTO;
 import ir.ipaam.transaction.query.model.Transaction;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +22,8 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @PostMapping("/deposit/batch")
-//    public CompletableFuture<ResponseEntity<CoreBatchDepositTransferResponseDTO>> batchTransfer(
     public CompletableFuture<ResponseEntity<BatchDepositTransferResponseDTO>> batchTransfer(
-                    @RequestBody BatchDepositTransferRequestDTO request) {
+            @Valid @RequestBody BatchDepositTransferRequestDTO request) {
 
         return transactionService.startBatchTransfer(request)
                 .thenApply(ResponseEntity::ok);

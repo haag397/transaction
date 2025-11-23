@@ -1,6 +1,7 @@
 package ir.ipaam.transaction.integration.event.handler;
 
 import feign.FeignException;
+import ir.ipaam.transaction.api.read.dto.GetTransactionStatusQuery;
 import ir.ipaam.transaction.api.write.dto.BatchDepositTransferResponseDTO;
 import ir.ipaam.transaction.application.command.BatchDepositTransferFailCommand;
 import ir.ipaam.transaction.application.command.BatchDepositTransferInquiredCommand;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
+import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -27,6 +29,7 @@ public class BatchDepositTransferEventHandler {
 
     private final CommandGateway commandGateway;
     private final CoreService coreService;
+    private final QueryUpdateEmitter queryUpdateEmitter;
 
     @EventHandler
     public void on(BatchDepositTransferRequestedEvent event) {
@@ -47,13 +50,18 @@ public class BatchDepositTransferEventHandler {
                             "200".equals(response.getStatus().getCode());
 
             if (success) {
-
+                queryUpdateEmitter.emit(
+                        GetTransactionStatusQuery.class,
+                        q -> q.getTransactionId().equals(event.getTransactionId()),
+                        response
+                );
                 commandGateway.send(new BatchDepositTransferSuccessCommand(
                         event.getTransactionId(),
                         response.getResult().getData().getTransactionCode(),
                         response.getResult().getData().getTransactionDate()
                 ));
             }else {
+                emitFailure(event.getTransactionId());
                 commandGateway.send(new BatchDepositTransferFailCommand(event.getTransactionId()));
             }}
 
@@ -63,7 +71,11 @@ public class BatchDepositTransferEventHandler {
 
                 BatchDepositTransferResponseDTO inquiryResponse =
                         coreService.transactionInquiry(event.getTransactionId());
-
+                queryUpdateEmitter.emit(
+                        GetTransactionStatusQuery.class,
+                        q -> q.getTransactionId().equals(event.getTransactionId()),
+                        inquiryResponse
+                );
                 commandGateway.send(new BatchDepositTransferInquiredCommand(
                         event.getTransactionId(),
                         inquiryResponse.getResult().getData().getTransactionCode(),
@@ -73,6 +85,7 @@ public class BatchDepositTransferEventHandler {
                 ));
 
             } else {
+                emitFailure(event.getTransactionId());
                 commandGateway.send(new BatchDepositTransferFailCommand(event.getTransactionId()));
             }
         }
@@ -83,8 +96,29 @@ public class BatchDepositTransferEventHandler {
 
         }
         catch (Exception ex) {
+            emitFailure(event.getTransactionId());
             commandGateway.send(new BatchDepositTransferFailCommand(event.getTransactionId()));
         }
+    }
+
+    private void emitFailure(String transactionId) {
+        BatchDepositTransferResponseDTO failed = BatchDepositTransferResponseDTO.builder()
+                .status(BatchDepositTransferResponseDTO.Status.builder()
+                        .code("500")
+                        .message("FAILED")
+                        .description("Core service error")
+                        .build())
+                .result(null)
+                .meta(BatchDepositTransferResponseDTO.Meta.builder()
+                        .transactionId(transactionId)
+                        .build())
+                .build();
+
+        queryUpdateEmitter.emit(
+                GetTransactionStatusQuery.class,
+                q -> q.getTransactionId().equals(transactionId),
+                failed
+        );
     }
 
     private String extractFullName(CoreDepositAccountHoldersResponseDTO res) {
