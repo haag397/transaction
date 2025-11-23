@@ -1,4 +1,4 @@
-package ir.ipaam.transaction.application.service;
+package ir.ipaam.transaction.api.read.dto;
 
 import lombok.Value;
 

@@ -1,7 +1,7 @@
 package ir.ipaam.transaction.query.projection;
 
 import com.github.mfathi91.time.PersianDate;
-import ir.ipaam.transaction.application.service.GetTransactionStatusQuery;
+import ir.ipaam.transaction.api.read.dto.GetTransactionStatusQuery;
 import ir.ipaam.transaction.domain.event.*;
 import ir.ipaam.transaction.domain.model.TransactionResponseStatus;
 import ir.ipaam.transaction.query.model.Transaction;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -48,11 +47,11 @@ public class TransactionProjection {
                 .build();
 
         repository.save(tx);
-        queryUpdateEmitter.emit(
-                GetTransactionStatusQuery.class,
-                q -> q.getTransactionId().equals(e.getTransactionId()),
-                tx
-        );
+//        queryUpdateEmitter.emit(
+//                GetTransactionStatusQuery.class,
+//                q -> q.getTransactionId().equals(e.getTransactionId()),
+//                tx
+//        );
     }
 
     @EventHandler
@@ -131,6 +130,4 @@ public class TransactionProjection {
             return null;
         }
     }
-
-
 }

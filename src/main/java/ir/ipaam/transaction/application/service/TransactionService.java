@@ -2,12 +2,12 @@ package ir.ipaam.transaction.application.service;
 
 import ir.ipaam.common.dto.QuerySubscriptionDTO;
 import ir.ipaam.common.orchestration.QueryCommandFlowGateway;
+import ir.ipaam.transaction.api.read.dto.GetTransactionStatusQuery;
 import ir.ipaam.transaction.api.write.dto.BatchDepositTransferRequestDTO;
 import ir.ipaam.transaction.api.write.dto.BatchDepositTransferResponseDTO;
 import ir.ipaam.transaction.application.command.BatchDepositTransferCommand;
 import ir.ipaam.transaction.domain.model.TransactionSubType;
 import ir.ipaam.transaction.domain.model.TransactionType;
-import ir.ipaam.transaction.integration.client.core.dto.CoreBatchDepositTransferResponseDTO;
 import ir.ipaam.transaction.integration.client.core.dto.CoreDepositAccountHoldersResponseDTO;
 import ir.ipaam.transaction.integration.client.core.service.CoreService;
 import ir.ipaam.transaction.query.model.Transaction;
@@ -92,6 +92,7 @@ public class TransactionService {
         return repository.findByTransactionId(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
     }
+
     private BatchDepositTransferResponseDTO mapToResponse(Transaction tx) {
         BatchDepositTransferResponseDTO.Data data =
                 BatchDepositTransferResponseDTO.Data.builder()
