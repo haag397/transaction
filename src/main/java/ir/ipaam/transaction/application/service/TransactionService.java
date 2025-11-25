@@ -93,48 +93,6 @@ public class TransactionService {
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
     }
 
-    private BatchDepositTransferResponseDTO mapToResponse(Transaction tx) {
-        BatchDepositTransferResponseDTO.Data data =
-                BatchDepositTransferResponseDTO.Data.builder()
-                        .transactionId(tx.getTransactionId())
-                        .transactionCode(tx.getTransactionCode())
-                        .transactionDate(tx.getTransactionDate() != null ? tx.getTransactionDate().toString() : null)
-                        .transactionStatus(tx.getStatus().name())
-                        .transactionRefNumber(tx.getRefNumber())
-                        .build();
-
-        BatchDepositTransferResponseDTO.Status innerStatus =
-                BatchDepositTransferResponseDTO.Status.builder()
-                        .code("200")
-                        .message("OK")
-                        .description(null)
-                        .build();
-
-        BatchDepositTransferResponseDTO.Result result =
-                BatchDepositTransferResponseDTO.Result.builder()
-                        .data(data)
-                        .status(innerStatus)
-                        .build();
-
-        BatchDepositTransferResponseDTO.Status apiStatus =
-                BatchDepositTransferResponseDTO.Status.builder()
-                        .code("200")
-                        .message("OK")
-                        .description(null)
-                        .build();
-
-        BatchDepositTransferResponseDTO.Meta meta =
-                BatchDepositTransferResponseDTO.Meta.builder()
-                        .transactionId(tx.getTransactionId())
-                        .build();
-
-        return BatchDepositTransferResponseDTO.builder()
-                .result(result)
-                .status(apiStatus)
-                .meta(meta)
-                .build();
-    }
-
     private BatchDepositTransferResponseDTO mapError(Map<Class<?>, Object> errors) {
 
         BatchDepositTransferResponseDTO.Status status =
