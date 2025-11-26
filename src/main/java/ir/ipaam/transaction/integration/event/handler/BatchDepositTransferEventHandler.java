@@ -91,7 +91,6 @@ public class BatchDepositTransferEventHandler {
         }
 
         catch (FeignException.FeignServerException serverError) {
-
             commandGateway.send(new BatchDepositTransferFailCommand(event.getTransactionId()));
 
         }

@@ -18,9 +18,7 @@ public class CoreServiceImpl implements CoreService {
     private final CoreClient coreClient;
 
     @Override
-//    public CoreBatchDepositTransferResponseDTO batchDepositTransfer(CoreBatchDepositTransferRequestDTO request) {
     public BatchDepositTransferResponseDTO batchDepositTransfer(CoreBatchDepositTransferRequestDTO request) {
-
             try {
             return coreClient.batchDepositTransfer(request);
         } catch (FeignException feignException) {
@@ -30,9 +28,7 @@ public class CoreServiceImpl implements CoreService {
     }
 
     @Override
-//    public CoreTransactionInquiryResponseDTO transactionInquiry(String transactionId) {
     public BatchDepositTransferResponseDTO transactionInquiry(String transactionId) {
-
             try {
             return coreClient.transactionInquiry(transactionId);
         } catch (FeignException feignException) {

@@ -111,7 +111,7 @@ public class TransactionProjection {
             // input = "1404/02/27 - 10:43:29"
             String[] parts = input.split(" - ");
             String jalali = parts[0]; // 1404/02/27
-            String time   = parts.length > 1 ? parts[1] : "00:00:00";
+            String time   = parts[1];
 
             // Parse Persian date manually
             String[] dateParts = jalali.split("/");
@@ -127,7 +127,8 @@ public class TransactionProjection {
             return LocalDateTime.of(gregorian, localTime);
 
         } catch (Exception ex) {
-            return null;
-        }
+            throw new IllegalArgumentException(
+                    "خطا در تبدیل تاریخ '" + input + "'", ex
+            );        }
     }
 }

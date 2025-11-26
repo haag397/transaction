@@ -14,7 +14,6 @@ import ir.ipaam.transaction.query.model.Transaction;
 import ir.ipaam.transaction.query.repository.TransactionRepository;
 import ir.ipaam.transaction.utills.TransactionIdGenerator;
 import lombok.RequiredArgsConstructor;
-import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -28,7 +27,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TransactionService {
 
-    private final CommandGateway commandGateway;
     private final TransactionRepository repository;
     private final CoreService coreService;
     private final QueryCommandFlowGateway queryCommandFlowGateway;
@@ -90,7 +88,7 @@ public class TransactionService {
 
     public Transaction getTransaction(String transactionId) {
         return repository.findByTransactionId(transactionId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+                .orElseThrow(() -> new RuntimeException("تراکنش پیدا نشد"));
     }
 
     private BatchDepositTransferResponseDTO mapError(Map<Class<?>, Object> errors) {
@@ -99,7 +97,7 @@ public class TransactionService {
                 BatchDepositTransferResponseDTO.Status.builder()
                         .code("500")
                         .message("FAILED")
-                        .description("Worker returned error or timeout")
+                        .description("خطا در ارتباط با سرویس")
                         .build();
 
         return BatchDepositTransferResponseDTO.builder()

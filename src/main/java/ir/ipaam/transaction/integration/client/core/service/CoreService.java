@@ -4,8 +4,6 @@ import ir.ipaam.transaction.api.write.dto.BatchDepositTransferResponseDTO;
 import ir.ipaam.transaction.integration.client.core.dto.*;
 
 public interface CoreService {
-//    CoreBatchDepositTransferResponseDTO batchDepositTransfer(CoreBatchDepositTransferRequestDTO request);
-//    CoreTransactionInquiryResponseDTO transactionInquiry(String transactionId);
     BatchDepositTransferResponseDTO batchDepositTransfer(CoreBatchDepositTransferRequestDTO request);
     BatchDepositTransferResponseDTO transactionInquiry(String transactionId);
     CoreSatnaTransferResponseDTO satnaTransfer(CoreSatnaTransferRequestDTO request);

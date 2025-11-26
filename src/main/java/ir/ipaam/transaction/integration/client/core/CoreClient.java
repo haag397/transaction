@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-//@FeignClient(name = "core-client", url = "http://localhost:8290/api/corebanking")
-@FeignClient(name = "core-client", url = "http://192.168.107.17:8290/api/corebanking")
+@FeignClient(name = "core-client", url = "http://localhost:8290/api/corebanking")
+//@FeignClient(name = "core-client", url = "http://192.168.107.17:8290/api/corebanking")
 
 public interface CoreClient {
     @PostMapping("/payment/v1.0/accounts/transfer")
