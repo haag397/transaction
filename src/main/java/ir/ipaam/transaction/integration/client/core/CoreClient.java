@@ -1,7 +1,6 @@
 package ir.ipaam.transaction.integration.client.core;
 
 import ir.ipaam.transaction.api.write.dto.BatchDepositTransferResponseDTO;
-//import ir.ipaam.transaction.integration.client.core.config.CoreClientConfig;
 import ir.ipaam.transaction.integration.client.core.dto.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +16,6 @@ public interface CoreClient {
     BatchDepositTransferResponseDTO batchDepositTransfer(@RequestBody CoreBatchDepositTransferRequestDTO request);
 
     @GetMapping("/payment/v1.0/transaction/{transactionId}")
-//    CoreTransactionInquiryResponseDTO transactionInquiry(@PathVariable String transactionId);
     BatchDepositTransferResponseDTO transactionInquiry(@PathVariable String transactionId);
 
     @GetMapping("/deposits/v1.0/holders/{depositNumber}")
